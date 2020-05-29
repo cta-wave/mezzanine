@@ -158,8 +158,9 @@ function roundedfloat {
     awk "BEGIN {printf \"%.$2f\", $1}"
 }
 
-# Compute QR size relative to output framing, target 25% frame height
+# Compute the size of various overlay blocks so they are consistently placed
 QR_SIZE=`roundedfloat "$HEIGHT*0.25" 0`
+BEEP_BLOCK_SIZE=`roundedfloat "$HEIGHT*0.1" 0`
 
 # Generates a series of timestamped QR codes at the framerate of the target output
 # Each QR code is generated and output to stdout
@@ -220,6 +221,8 @@ generateqrcodes | \
         -ss $SEEK -i $SOURCE \
         -i $BOUNDARIES \
         -framerate $FRAMERATE -f image2pipe -thread_queue_size 512 -vcodec png -i - \
+        -f lavfi -i "color=black:size=${BEEP_BLOCK_SIZE}x${BEEP_BLOCK_SIZE}" \
+        -f lavfi -i "color=white:size=${BEEP_BLOCK_SIZE}x${BEEP_BLOCK_SIZE}" \
         -filter_complex "\
             [1:v]\
                 scale=\
@@ -237,7 +240,7 @@ generateqrcodes | \
                     fontfile=$FONT:\
                     text='$LABEL':\
                     x=(w-tw)/2:\
-                    y=(4*lh):\
+                    y=(5*lh):\
                     fontcolor=white:\
                     fontsize=h*0.06:\
                     box=1:\
@@ -263,6 +266,10 @@ generateqrcodes | \
                     w=${QR_SIZE}:\
                     h=-1\
             [qrs];\
+            [4][5]\
+                overlay=\
+                    x='if(between(mod(t,1),0, 0.120),0,main_w*2)'\
+            [beepindicator];\
             [content][boundaries]\
                 overlay=\
                     repeatlast=1\
@@ -271,6 +278,11 @@ generateqrcodes | \
                 overlay=\
                     x='(main_w*0.1)+if(between(mod(n,${QR_POSITIONS}),2,3),overlay_w)':\
                     y='(main_h/2)-ifnot(between(mod(n,${QR_POSITIONS}),1,2),overlay_h)'\
+            [qrplaced];\
+            [qrplaced][beepindicator]\
+                overlay=\
+                    x='main_w*0.9-overlay_w':\
+                    y='main_h*0.2'\
             [vfinal]\
         " \
         -map '[vfinal]' \
