@@ -8,7 +8,9 @@ BOUNDARIES="boundaries.png"
 RESOLUTION="1920x1080"
 WIDTH=""  # Pulled from RESOLUTION string, see below
 HEIGHT="" # Pulled from RESOLUTION string, see below
-NAME="cta-wave-mezzanine"
+LABEL="mezz"
+FRAME_NUMBER_PADDING=7
+QR_POSITIONS=2
 
 function help() {
     echo "\
@@ -28,12 +30,20 @@ $0 [<flags>] <source-file> <output-file>
         Fractional rates must be specified as division operations \"30000/1001\"
         Default: $FRAMERATE
 
+    --frame-number-padding <padding>
+        The amount of zero padding to use when displaying the current frame number
+        Default: ${FRAME_NUMBER_PADDING}
+
     -h, --help
         Displays this help message
 
-    -n, --name <string>
-        Provide a name for this mezzanine, will exist in qrcode
-        Default: \"$NAME\"
+    -l, --label <string>
+        Provide a label for this mezzanine, will exist in qrcodes and on-screen
+        Default: \"$LABEL\"
+
+    -q, --qr-positions <2|4>
+        The number of on-screen QR code positions to use, may be 2 or 4
+        Default: ${QR_POSITIONS}
 
     -r, --resolution <string>
         The target resolution of the output, video will be scaled and padded to fit resolution
@@ -74,11 +84,21 @@ while [[ $# -gt 0 ]]; do
         shift
         shift
         ;;
+        --frame-number-padding)
+        FRAME_NUMBER_PADDING=$2
+        shift
+        shift
+        ;;
         -h|--help)
         help
         ;;
-        -n|--name)
-        NAME="$2"
+        -l|--label)
+        LABEL="$2"
+        shift
+        shift
+        ;;
+        -q|--qr-positions)
+        QR_POSITIONS=$2
         shift
         shift
         ;;
@@ -128,25 +148,32 @@ if [[ -z $WIDTH ]] || [[ -z $HEIGHT ]]; then
     help "Resolution must be form of <width>x<height>, given: \"$RESOLUTION\""
 fi
 
+# Check QR position value
+if [[ "$QR_POSITIONS" -ne "2" ]] && [[ "$QR_POSITIONS" -ne "4" ]]; then
+    help "QR Codes may only be in either 2 or 4 positions"
+fi
+
 # Helper for performing rounded float operations since bash cannot directly do this
 function roundedfloat {
     awk "BEGIN {printf \"%.$2f\", $1}"
 }
 
-# Compute QR size relative to output framing, target 25% frame height
-QRSIZE=`roundedfloat "$HEIGHT*0.25" 0`
+# Compute the size of various overlay blocks so they are consistently placed
+QR_SIZE=`roundedfloat "$HEIGHT*0.25" 0`
+BEEP_BLOCK_SIZE=`roundedfloat "$HEIGHT*0.1" 0`
 
 # Generates a series of timestamped QR codes at the framerate of the target output
 # Each QR code is generated and output to stdout
 function generateqrcodes {
-    FRAME_DURATION=`roundedfloat "1/($FRAMERATE)" 10`
     FRAME_COUNT=`roundedfloat "($FRAMERATE)*$DURATION" 0`
+    FRAME_DURATION=`roundedfloat "1/($FRAMERATE)" 10`
 
     FRAME_PTS=0
     for (( i=0; i<$FRAME_COUNT; i++))
     do
         TIMECODE=`awk "BEGIN {printf \"%d:%02d:%06.3f\", $FRAME_PTS/3600, $FRAME_PTS/60, $FRAME_PTS%60;}"`
-        qrencode -l H -s 6 -o - "$NAME,$TIMECODE"
+        PADDED_FRAME=`printf %0${FRAME_NUMBER_PADDING}d $i`
+        qrencode -l H -s 6 -o - "$LABEL;$TIMECODE;$PADDED_FRAME"
 
         # Note that simple multiplication of frame duration is too accurate, instead the
         # pts must be computed by adding the accurate frame duration to the rounded pts.
@@ -194,6 +221,8 @@ generateqrcodes | \
         -ss $SEEK -i $SOURCE \
         -i $BOUNDARIES \
         -framerate $FRAMERATE -f image2pipe -thread_queue_size 512 -vcodec png -i - \
+        -f lavfi -i "color=black:size=${BEEP_BLOCK_SIZE}x${BEEP_BLOCK_SIZE}" \
+        -f lavfi -i "color=white:size=${BEEP_BLOCK_SIZE}x${BEEP_BLOCK_SIZE}" \
         -filter_complex "\
             [1:v]\
                 scale=\
@@ -209,13 +238,23 @@ generateqrcodes | \
                 fps=fps=$FRAMERATE,\
                 drawtext=\
                     fontfile=$FONT:\
-                    text='%{pts \:hms}':\
+                    text='$LABEL':\
+                    x=(w-tw)/2:\
+                    y=(5*lh):\
+                    fontcolor=white:\
+                    fontsize=h*0.06:\
+                    box=1:\
+                    boxborderw=10:\
+                    boxcolor=black,\
+                drawtext=\
+                    fontfile=$FONT:\
+                    text='%{pts\:hms};%{eif\:n\:d\:${FRAME_NUMBER_PADDING}}':\
                     x=(w-tw)/2:\
                     y=h-(4*lh):\
                     fontcolor=white:\
                     fontsize=h*0.06:\
                     box=1:\
-                    boxborderw=h*0.02:\
+                    boxborderw=10:\
                     boxcolor=black\
             [content];\
             [2]\
@@ -224,17 +263,26 @@ generateqrcodes | \
             [boundaries];\
             [3]\
                 scale=\
-                    w=$QRSIZE:\
+                    w=${QR_SIZE}:\
                     h=-1\
             [qrs];\
+            [4][5]\
+                overlay=\
+                    x='if(between(mod(t,1),0, 0.120),0,main_w*2)'\
+            [beepindicator];\
             [content][boundaries]\
                 overlay=\
                     repeatlast=1\
             [bounded];\
             [bounded][qrs]\
                 overlay=\
-                    x=main_w*0.1:\
-                    y='if(eq(mod(n,2),0),main_h*0.2,main_h*0.8-overlay_h)'\
+                    x='(main_w*0.1)+if(between(mod(n,${QR_POSITIONS}),2,3),overlay_w)':\
+                    y='(main_h/2)-ifnot(between(mod(n,${QR_POSITIONS}),1,2),overlay_h)'\
+            [qrplaced];\
+            [qrplaced][beepindicator]\
+                overlay=\
+                    x='main_w*0.9-overlay_w':\
+                    y='main_h*0.2'\
             [vfinal]\
         " \
         -map '[vfinal]' \
