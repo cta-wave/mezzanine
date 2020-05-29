@@ -10,6 +10,7 @@ WIDTH=""  # Pulled from RESOLUTION string, see below
 HEIGHT="" # Pulled from RESOLUTION string, see below
 LABEL="mezz"
 FRAME_NUMBER_PADDING=7
+QR_POSITIONS=2
 
 function help() {
     echo "\
@@ -39,6 +40,10 @@ $0 [<flags>] <source-file> <output-file>
     -l, --label <string>
         Provide a label for this mezzanine, will exist in qrcodes and on-screen
         Default: \"$LABEL\"
+
+    -q, --qr-positions <2|4>
+        The number of on-screen QR code positions to use, may be 2 or 4
+        Default: ${QR_POSITIONS}
 
     -r, --resolution <string>
         The target resolution of the output, video will be scaled and padded to fit resolution
@@ -92,6 +97,11 @@ while [[ $# -gt 0 ]]; do
         shift
         shift
         ;;
+        -q|--qr-positions)
+        QR_POSITIONS=$2
+        shift
+        shift
+        ;;
         -r|--resolution)
         RESOLUTION="$2"
         shift
@@ -136,6 +146,11 @@ HEIGHT=$(awk -Fx '{print $2}' <<< $RESOLUTION)
 
 if [[ -z $WIDTH ]] || [[ -z $HEIGHT ]]; then
     help "Resolution must be form of <width>x<height>, given: \"$RESOLUTION\""
+fi
+
+# Check QR position value
+if [[ "$QR_POSITIONS" -ne "2" ]] && [[ "$QR_POSITIONS" -ne "4" ]]; then
+    help "QR Codes may only be in either 2 or 4 positions"
 fi
 
 # Helper for performing rounded float operations since bash cannot directly do this
@@ -254,8 +269,8 @@ generateqrcodes | \
             [bounded];\
             [bounded][qrs]\
                 overlay=\
-                    x=main_w*0.1:\
-                    y='if(eq(mod(n,2),0),main_h*0.2,main_h*0.8-overlay_h)'\
+                    x='(main_w*0.1)+if(between(mod(n,${QR_POSITIONS}),2,3),overlay_w)':\
+                    y='(main_h/2)-ifnot(between(mod(n,${QR_POSITIONS}),1,2),overlay_h)'\
             [vfinal]\
         " \
         -map '[vfinal]' \
