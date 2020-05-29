@@ -8,7 +8,8 @@ BOUNDARIES="boundaries.png"
 RESOLUTION="1920x1080"
 WIDTH=""  # Pulled from RESOLUTION string, see below
 HEIGHT="" # Pulled from RESOLUTION string, see below
-NAME="cta-wave-mezzanine"
+LABEL="mezz"
+FRAME_NUMBER_PADDING=7
 
 function help() {
     echo "\
@@ -28,12 +29,16 @@ $0 [<flags>] <source-file> <output-file>
         Fractional rates must be specified as division operations \"30000/1001\"
         Default: $FRAMERATE
 
+    --frame-number-padding <padding>
+        The amount of zero padding to use when displaying the current frame number
+        Default: ${FRAME_NUMBER_PADDING}
+
     -h, --help
         Displays this help message
 
-    -n, --name <string>
-        Provide a name for this mezzanine, will exist in qrcode
-        Default: \"$NAME\"
+    -l, --label <string>
+        Provide a label for this mezzanine, will exist in qrcodes and on-screen
+        Default: \"$LABEL\"
 
     -r, --resolution <string>
         The target resolution of the output, video will be scaled and padded to fit resolution
@@ -74,11 +79,16 @@ while [[ $# -gt 0 ]]; do
         shift
         shift
         ;;
+        --frame-number-padding)
+        FRAME_NUMBER_PADDING=$2
+        shift
+        shift
+        ;;
         -h|--help)
         help
         ;;
-        -n|--name)
-        NAME="$2"
+        -l|--label)
+        LABEL="$2"
         shift
         shift
         ;;
@@ -134,19 +144,20 @@ function roundedfloat {
 }
 
 # Compute QR size relative to output framing, target 25% frame height
-QRSIZE=`roundedfloat "$HEIGHT*0.25" 0`
+QR_SIZE=`roundedfloat "$HEIGHT*0.25" 0`
 
 # Generates a series of timestamped QR codes at the framerate of the target output
 # Each QR code is generated and output to stdout
 function generateqrcodes {
-    FRAME_DURATION=`roundedfloat "1/($FRAMERATE)" 10`
     FRAME_COUNT=`roundedfloat "($FRAMERATE)*$DURATION" 0`
+    FRAME_DURATION=`roundedfloat "1/($FRAMERATE)" 10`
 
     FRAME_PTS=0
     for (( i=0; i<$FRAME_COUNT; i++))
     do
         TIMECODE=`awk "BEGIN {printf \"%d:%02d:%06.3f\", $FRAME_PTS/3600, $FRAME_PTS/60, $FRAME_PTS%60;}"`
-        qrencode -l H -s 6 -o - "$NAME,$TIMECODE"
+        PADDED_FRAME=`printf %0${FRAME_NUMBER_PADDING}d $i`
+        qrencode -l H -s 6 -o - "$LABEL;$TIMECODE;$PADDED_FRAME"
 
         # Note that simple multiplication of frame duration is too accurate, instead the
         # pts must be computed by adding the accurate frame duration to the rounded pts.
@@ -209,13 +220,23 @@ generateqrcodes | \
                 fps=fps=$FRAMERATE,\
                 drawtext=\
                     fontfile=$FONT:\
-                    text='%{pts \:hms}':\
+                    text='$LABEL':\
+                    x=(w-tw)/2:\
+                    y=(4*lh):\
+                    fontcolor=white:\
+                    fontsize=h*0.06:\
+                    box=1:\
+                    boxborderw=10:\
+                    boxcolor=black,\
+                drawtext=\
+                    fontfile=$FONT:\
+                    text='%{pts\:hms};%{eif\:n\:d\:${FRAME_NUMBER_PADDING}}':\
                     x=(w-tw)/2:\
                     y=h-(4*lh):\
                     fontcolor=white:\
                     fontsize=h*0.06:\
                     box=1:\
-                    boxborderw=h*0.02:\
+                    boxborderw=10:\
                     boxcolor=black\
             [content];\
             [2]\
@@ -224,7 +245,7 @@ generateqrcodes | \
             [boundaries];\
             [3]\
                 scale=\
-                    w=$QRSIZE:\
+                    w=${QR_SIZE}:\
                     h=-1\
             [qrs];\
             [content][boundaries]\
