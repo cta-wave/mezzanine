@@ -60,3 +60,22 @@ You can then execute the following to produce the equivalent output file:
 `./mezzanine.sh -s 00:00:07.250 -d 30 -f 30 -b boundaries.png -t "Cousine-Regular.ttf" ToS-4k-1920.mov tos-30sec-final.mp4`
 
 The full details of the available commands for the script can be found by executing `./mezzanine.sh -h`
+
+## Alternate Single Python Script Method
+
+The above steps have also been combined into a single Python script `mezzanine.py`. 
+
+This Python script uses modified synchronisation timing video test sequence generator scripts from 
+[DVB companion screen synchronisation timing accuracy measurement](https://www.github.com/BBC/dvbcss-synctiming)
+to generate a sequence of "beeps" and "flashes" with an irregular pattern that only repeats after a configurable duration (default 31 seconds).
+
+To accomplish the above steps with the same result you will need the following original files referenced above:
+
+- `ToS-4k-1920.mov`
+- `boundaries.png`
+- `Cousine-Regular.ttf`
+
+You can then execute the following to produce the equivalent output file:
+`py mezzanine.py -s 00:00:07.250 -d 30 -f 30 -b boundaries.png -t "Cousine-Regular.ttf" ToS-4k-1920.mov tos-30sec-final.mp4`
+
+The full details of the available commands for the script can be found by executing `py mezzanine.py -h`
