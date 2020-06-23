@@ -132,4 +132,3 @@ def genBeepSequence(beepCentreTimesSecs, idealBeepDurationSecs, sequenceDuration
 def secsToSamples(tSecs, startSample=0, sampleRateHz = 480000):
     return secsToTicks(tSecs, startSample, sampleRateHz)
 
-

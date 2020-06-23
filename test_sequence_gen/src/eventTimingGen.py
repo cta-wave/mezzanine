@@ -238,4 +238,3 @@ def secsToTicks(tSecs, startTick, tickRate):
     """
     return tSecs * tickRate + startTick
 
-

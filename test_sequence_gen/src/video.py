@@ -461,3 +461,4 @@ def genSimpleFrameImages(widthHeightPixelsTuple, flashColourGen, numFrames, BG_C
         draw.rectangle(topLeft + bottomRight, outline=None, fill=flashColour)
 
         yield img
+
