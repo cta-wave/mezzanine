@@ -41,9 +41,12 @@ qr_positions = 2
 resolution= '1920x1080'
 seek = '00:00:00.000'
 start_end_indicators = 'disabled'
+start_end_indicator_nb_frames = 1	# Not configurable via argument, number of indicator frames to insert at the start and/or end
 start_end_indicators_cl =[]			# Defined based on start_end_indicators, see below
 start_end_indicators_mix_cl = '[vfinal][afinal] concat=n=1:v=1:a=1 [vout][aout]' # Defined based on start_end_indicators, see below
 start_indicator_frame_offset = 0	# Defined based on start_end_indicators, see below
+start_indicator_color = '0x006400'	# Not configurable via argument, color in hexadecimal 0xRRGGBB sequence
+end_indicator_color = '0x8B0000'	# Not configurable via argument, color in hexadecimal 0xRRGGBB sequence
 test_sequence_gen_script = Path('test_sequence_gen/src/generate.py') # Not configurable via argument
 width=''  # Pulled from resolution string, see below
 height='' # Pulled from resolution string, see below
@@ -202,28 +205,28 @@ height = resolution.split('x')[1]
 
 # Set start/end indicator frame FFMPEG parameters and associated filter parameters to concatenate with source test sequence before output
 if start_end_indicators == 'enabled':
-	start_end_indicators_cl = ['-t', str(1/eval(framerate)), '-f', 'lavfi', '-i', 'color=0x006400:size='+width+'x'+height+':rate='+framerate,
-								'-t', str(1/eval(framerate)), '-f', 'lavfi', '-i', 'anullsrc=channel_layout=mono:sample_rate='+beep_audio_samplerate,
-								'-t', str(1/eval(framerate)), '-f', 'lavfi', '-i', 'color=0x8B0000:size='+width+'x'+height,
-								'-t', str(1/eval(framerate)), '-f', 'lavfi', '-i', 'anullsrc=channel_layout=mono:sample_rate='+beep_audio_samplerate]
+	start_end_indicators_cl = ['-t', str(start_end_indicator_nb_frames/eval(framerate)), '-f', 'lavfi', '-i', 'color='+start_indicator_color+':size='+width+'x'+height+':rate='+framerate,
+								'-t', str(start_end_indicator_nb_frames/eval(framerate)), '-f', 'lavfi', '-i', 'sine=frequency=1000:beep_factor=1:sample_rate='+beep_audio_samplerate,
+								'-t', str(start_end_indicator_nb_frames/eval(framerate)), '-f', 'lavfi', '-i', 'color='+end_indicator_color+':size='+width+'x'+height+':rate='+framerate,
+								'-t', str(start_end_indicator_nb_frames/eval(framerate)), '-f', 'lavfi', '-i', 'sine=frequency=1000:beep_factor=1:sample_rate='+beep_audio_samplerate]
 	start_end_indicators_mix_cl = '[5][6][vfinal][afinal][7][8]\
 										concat=\
 											n=3:v=1:a=1\
 									[vout][aout]'
-	start_indicator_frame_offset = 1	
+	start_indicator_frame_offset = start_end_indicator_nb_frames	
 	
 elif start_end_indicators == 'start':
-	start_end_indicators_cl = ['-t', str(1/eval(framerate)), '-f', 'lavfi', '-i', 'smptebars=size='+width+'x'+height+':rate='+framerate,
-								'-t', str(1/eval(framerate)), '-f', 'lavfi', '-i', 'anullsrc=channel_layout=mono:sample_rate='+beep_audio_samplerate]
+	start_end_indicators_cl = ['-t', str(start_end_indicator_nb_frames/eval(framerate)), '-f', 'lavfi', '-i', 'color='+start_indicator_color+':size='+width+'x'+height+':rate='+framerate,
+								'-t', str(start_end_indicator_nb_frames/eval(framerate)), '-f', 'lavfi', '-i', 'sine=frequency=1000:beep_factor=1:sample_rate='+beep_audio_samplerate]
 	start_end_indicators_mix_cl = '[5][6][vfinal][afinal]\
 										concat=\
 											n=2:v=1:a=1\
 									[vout][aout]'
-	start_indicator_frame_offset = 1
+	start_indicator_frame_offset = start_end_indicator_nb_frames
 	
 elif start_end_indicators == 'end':
-	start_end_indicators_cl = ['-t', str(1/eval(framerate)), '-f', 'lavfi', '-i', 'color=0x8B0000:size='+width+'x'+height,
-								'-t', str(1/eval(framerate)), '-f', 'lavfi', '-i', 'anullsrc=channel_layout=mono:sample_rate='+beep_audio_samplerate]
+	start_end_indicators_cl = ['-t', str(start_end_indicator_nb_frames/eval(framerate)), '-f', 'lavfi', '-i', 'color='+end_indicator_color+':size='+width+'x'+height+':rate='+framerate,
+								'-t', str(start_end_indicator_nb_frames/eval(framerate)), '-f', 'lavfi', '-i', 'sine=frequency=1000:beep_factor=1:sample_rate='+beep_audio_samplerate]
 	start_end_indicators_mix_cl = '[vfinal][afinal][5][6]\
 										concat=\
 											n=2:v=1:a=1\
@@ -264,7 +267,7 @@ for i in range(0,frame_count):
 	qr.add_data(label+';'+timecode+';'+padded_frame)
 	qr.make(fit=True)
 	
-	qr_img = qr.make_image(fill_color='black', back_color='white')
+	qr_img = qr.make_image(fill_color='white', back_color='black')
 	qr_img.save(qr_filename)
 	
 	frame_pts = round(frame_pts+frame_duration,7)
@@ -299,6 +302,7 @@ subprocess.run(['python', test_sequence_gen_script,
 #   [2] An image file of frame boundary markers
 #   [3] A series of QR code images generated in a previous step
 #   [4] A series of images generated in a previous step depicting an irregular pattern of flashes matching the beeps of [0]
+#   [5],[6],[7],[8] Are single colored frames with silent audio, used to signal the start and end of the stream
 # - Applies the following complex filter to the demuxed inputs:
 #     - Takes the video stream from the original source and:
 #       - Scales it to the desired output size while preserving original ratio
@@ -319,11 +323,17 @@ subprocess.run(['python', test_sequence_gen_script,
 #       - Overlays the scaled pattern of flashes indicating a beep
 #     - Takes the audio stream from the original source and:
 #       - Mixes it with the audio stream containing the beeps
+#     - Frames signalling the start/end of the content are concatenated to the start/end of the output of the last overlay composition
+#     - Silent audio is concatenated to the start/end of the output of the audio mix filter
 # - Post filter the output is mapped as follows:
-#     - Video is the output of the last overlay composition
-#     - Audio is the output of the audio mix filter
+#     - Video is either:
+#       - the output of the concatenation of the last overlay composition and start/end frames when they are enabled
+#       - else the output of the last overlay composition
+#     - Audio is either:
+#       - the output of the concatenation of the audio mix filter output with silence for the start/end frames when they are enabled
+#       - else the output of the audio mix filter
 # - The mapped outputs are then:
-#     - Encoded in h264 for video and aac for audio
+#     - Encoded in h264 or h265 for video depending on the source content, and aac for audio
 #     - Fixed to the desired output framerate
 #     - Fixed to the desired duration
 #     - Written to the supplied output location (overwriting is enabled)
