@@ -2,6 +2,8 @@
 #
 # Copyright 2015 British Broadcasting Corporation
 # 
+# Modifications copyright 2020 TP Vision Belgium NV
+# 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -58,7 +60,7 @@ def saveAsWavFile(seq, filename, sampleRateHz):
     :param sampleRateHz: The sample rate of the sample data
     """
     # turn into signed 16 bit little-endian raw samples
-    values = list(seq)
+    values = list(seq) 
     num = len(values)
     sampleData = struct.pack("<"+str(num)+"h", *values)
     
@@ -90,7 +92,7 @@ def GenTone(sampleRateHz, peakValue, toneHz, phaseOffsetCycles=0.0):
     while True:
         # doing the calculation this way to avoid cumulative errors (because math.pi is not an exact perfect PI value!)
         phase, cycleNum = math.modf(n / samplesPerCycle + phaseOffsetCycles)
-        yield peakValue * math.sin(phase * 2 * math.pi)
+        yield int(peakValue * math.sin(phase * 2 * math.pi))
         n=n+1
 
 
@@ -119,7 +121,7 @@ def genBeepSequence(beepCentreTimesSecs, idealBeepDurationSecs, sequenceDuration
         
     def silenceGen():
         while True:
-            yield 0.0
+            yield 0
         
     seqIter = genSequenceFromSampleIndices(beepStartEndSamples, silenceGen, toneGenFactory)
     
@@ -129,5 +131,4 @@ def genBeepSequence(beepCentreTimesSecs, idealBeepDurationSecs, sequenceDuration
 
 def secsToSamples(tSecs, startSample=0, sampleRateHz = 480000):
     return secsToTicks(tSecs, startSample, sampleRateHz)
-
 

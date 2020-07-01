@@ -315,33 +315,33 @@ if __name__ == "__main__":
             sys.stderr.write("\nCould not find output directory for "+purpose+".\nPlease check it exists and create it if necessary.\n\n")
             sys.exit(1)
 
-    print
-    print "Generating sequence with following parameters:"
-    print "   %s rate:                 %d fps" % (frameLabel.title(), fps)
-    print "   Pattern window length:      %d seconds (meaning pattern will repeat every %d seconds)" % (seqBitLen, (2**seqBitLen-1))
-    print "   Sequence duration:          %d seconds (%d frames)" % (sequenceDurationSecs, sequenceDurationSecs*fps)
-    print "   Video frame dimensions:     %d x %d pixels" % pixelsSize
-    print "   Audio sample rate:          %d Hz" % sampleRateHz
-    print "   Filename for PNG frames:    %s " % (frameFilenames if frameFilenames is not None else "<< will not be saved >>")
+    print()
+    print("Generating sequence with following parameters:")
+    print("   %s rate:                 %d fps" % (frameLabel.title(), fps))
+    print("   Pattern window length:      %d seconds (meaning pattern will repeat every %d seconds)" % (seqBitLen, (2**seqBitLen-1)))
+    print("   Sequence duration:          %d seconds (%d frames)" % (sequenceDurationSecs, sequenceDurationSecs*fps))
+    print("   Video frame dimensions:     %d x %d pixels" % pixelsSize)
+    print("   Audio sample rate:          %d Hz" % sampleRateHz)
+    print("   Filename for PNG frames:    %s " % (frameFilenames if frameFilenames is not None else "<< will not be saved >>"))
     if frameFilenames is not None and SKIP_IF_EXISTS:
-        print "                               (but will skip generating frames already on the disk)"
-    print "   Filename for WAV audio:     %s " % (audioFilename if audioFilename is not None else "<< will not be saved >>")
-    print "   Filename for JSON metadata: %s " % (metadataFilename if metadataFilename is not None else "<< will not be saved >>")
-    print "   Text colour:                %d %d %d " % text_colour
-    print "   Visual indicators colour:   %d %d %d " % gfx_colour
-    print "   Background colour:          %d %d %d " % bg_colour
+        print("                               (but will skip generating frames already on the disk)")
+    print("   Filename for WAV audio:     %s " % (audioFilename if audioFilename is not None else "<< will not be saved >>"))
+    print("   Filename for JSON metadata: %s " % (metadataFilename if metadataFilename is not None else "<< will not be saved >>"))
+    print("   Text colour:                %d %d %d " % text_colour)
+    print("   Visual indicators colour:   %d %d %d " % gfx_colour)
+    print("   Background colour:          %d %d %d " % bg_colour)
     if title_text != "":
-        print "   Title:                      %s" % title_text
-        print "   Title colour:               %d %d %d " % title_colour
+        print("   Title:                      %s" % title_text)
+        print("   Title colour:               %d %d %d " % title_colour)
     else:
-        print "   No title."
+        print("   No title.")
     if args.SEGMENTS:
-        print "    And with segments marked on the progress pie:"
+        print("    And with segments marked on the progress pie:")
         for i in range(0,len(args.SEGMENTS)):
-            print "        Segment starting at t=%f secs" % args.SEGMENTS[i][1]
-            print "            Pie label:   %s" % args.SEGMENTS[i][0]
-            print "            Description: %s" % args.SEGMENTS[i][2]
-    print ""
+            print("        Segment starting at t=%f secs" % args.SEGMENTS[i][1])
+            print("            Pie label:   %s" % args.SEGMENTS[i][0])
+            print("            Description: %s" % args.SEGMENTS[i][2])
+    print("")
 
     # -----------------------------------------------------------------------
 
@@ -366,13 +366,13 @@ if __name__ == "__main__":
         # choose beep duration carefully to match an exact number of cycles of the
         # tone sine wave to make it really nice and clean and symmetrical
 
-        print "Generating audio..."
+        print("Generating audio...")
         seqIter = genBeepSequence(eventCentreTimesSecs, idealBeepDurationSecs, sequenceDurationSecs, sampleRateHz, toneHz, amplitude)
 
-        print "Saving audio..."
+        print("Saving audio...")
         saveAsWavFile(seqIter, audioFilename, sampleRateHz)
     else:
-        print "NOT generating audio (no filename provided)"
+        print("NOT generating audio (no filename provided)")
 
     # -----------------------------------------------------------------------
 
@@ -398,7 +398,7 @@ if __name__ == "__main__":
         flashSequence = list(flashSequence) # flatten so we can know the length
         frameNum=0
 
-        print "Generating video images..."
+        print("Generating video images...")
         numNumberSubstitutions = len(re.findall(r"%.?[0-9]*d", frameFilenames))
 
         def genFrameFilename(n):
@@ -412,11 +412,11 @@ if __name__ == "__main__":
         # pass the flash sequence pixel colour generator to a new generator that
         # will yield a sequence of image frames
         
-        segments = map(lambda (label,startSecs,description) : {
-            "startSecs": startSecs,
-            "label": label,
-            "description": label+": "+description
-        }, args.SEGMENTS)
+        segments = [{
+            "startSecs": label_startSecs_description[1],
+            "label": label_startSecs_description[0],
+            "description": label_startSecs_description[0]+": "+label_startSecs_description[2]
+        } for label_startSecs_description in args.SEGMENTS]
 
         numFrames = len(flashSequence)
         
@@ -430,20 +430,20 @@ if __name__ == "__main__":
         for frame in frames:
             filename = genFrameFilename(n)
             if frame is not None:
-                print "    Generating and saving image %d of %d" % (n, numFrames-1)
+                print("    Generating and saving image %d of %d" % (n, numFrames-1))
                 frame.save(filename, format="PNG")
             else:
-                print "    Skipping image %d of %d (already exists)" % (n, numFrames-1)
+                print("    Skipping image %d of %d (already exists)" % (n, numFrames-1))
             n=n+1
     else:
-        print "NOT generating video images (no filename provided)"
+        print("NOT generating video images (no filename provided)")
 
     # -----------------------------------------------------------------------
 
     # THIRD we'll write out metadata
 
     if metadataFilename is not None:
-        print "Generating and writing metadata..."
+        print("Generating and writing metadata...")
 
         # obtain a generator that can yield a never ending stream of flash timings
         eventCentreTimesSecs = genEventCentreTimes(seqBitLen, fps)
@@ -475,7 +475,8 @@ if __name__ == "__main__":
         f.write(jsonString)
         f.close()
     else:
-        print "NOT generating metadata file (no filename provided)"
+        print("NOT generating metadata file (no filename provided)")
 
-    print "Done."
-    print
+    print("Done.")
+    print()
+

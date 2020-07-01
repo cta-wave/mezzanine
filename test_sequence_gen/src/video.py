@@ -31,13 +31,13 @@ try:
     from PIL import ImageDraw
     from PIL import ImageFont
 except ImportError:
-    print >> sys.stderr, "\n".join([
+    print("\n".join([
         "",
         "Error importing PIL (Python Image Library). Is it installed? Suggest installing using PIP, e.g.:",
         "",
         "    sudo pip install pillow\n",
         ""
-        ])
+        ]), file=sys.stderr)
     sys.exit(1)
 
 
@@ -94,7 +94,9 @@ class AspectPreservingCoordinateScaler(object):
     bounding box would be centred within the output bounding box.
     """
 
-    def __init__(self, (inputWidth, inputHeight), (outputWidth, outputHeight)):
+    def __init__(self, inputWidthHeightTuple, outputWidthHeightTuple):
+        (inputWidth, inputHeight) = inputWidthHeightTuple
+        (outputWidth, outputHeight) = outputWidthHeightTuple
         super(AspectPreservingCoordinateScaler,self).__init__()
 
         # work out how much we need to shrink/enlarge input coordinates to make
@@ -112,8 +114,9 @@ class AspectPreservingCoordinateScaler(object):
         self.xOffset = xGap / 2.0
         self.yOffset = yGap / 2.0
 
-    def xy(self, (x,y)):
+    def xy(self, xyCoordinatesTuple):
         """Translate (x,y) coordinate"""
+        (x,y) = xyCoordinatesTuple
         x = x * self.scale + self.xOffset
         y = y * self.scale + self.yOffset
         return (int(x),int(y))
@@ -144,8 +147,8 @@ def loadFont(sizePt):
 
 
 FIELD_INDICATOR = [
-    unichr(0x25cb)+u"1",     # hollow circle, '1'
-    unichr(0x25cf)+u"2",     # filled circle, '2'
+    chr(0x25cb)+"1",     # hollow circle, '1'
+    chr(0x25cf)+"2",     # filled circle, '2'
 ]
 
 def frameNumToTimecode(n, fps, framesAreFields=False):
@@ -155,7 +158,7 @@ def frameNumToTimecode(n, fps, framesAreFields=False):
     h = (n / fps / 60 / 60)
 
     if framesAreFields:
-        fieldIndicator = u'  ' + FIELD_INDICATOR[f % 2]
+        fieldIndicator = '  ' + FIELD_INDICATOR[f % 2]
         f = f / 2
     else:
         fieldIndicator = ""
@@ -203,7 +206,7 @@ def precise_filled_pieslice(draw, xy, start, end, *options, **kwoptions):
         draw.polygon([centre, p1, p2, centre], *options, **kwoptions)
 
 
-def genFrameImages((widthPixels, heightPixels), flashColourGen, flashColourGenPipTrain, numFrames, FPS, superSamplingScale=8, BG_COLOUR=(0,0,0), TEXT_COLOUR=(255,255,255), GFX_COLOUR=(255,255,255), title="", TITLE_COLOUR=(255,255,255), FRAMES_AS_FIELDS=False, frameSkipChecker=None, segments=[]):
+def genFrameImages(widthHeightPixelsTuple, flashColourGen, flashColourGenPipTrain, numFrames, FPS, superSamplingScale=8, BG_COLOUR=(0,0,0), TEXT_COLOUR=(255,255,255), GFX_COLOUR=(255,255,255), title="", TITLE_COLOUR=(255,255,255), FRAMES_AS_FIELDS=False, frameSkipChecker=None, segments=[]):
     """\
     Generator that yields PIL Image objects representing video frames, one at a time
 
@@ -223,11 +226,7 @@ def genFrameImages((widthPixels, heightPixels), flashColourGen, flashColourGenPi
     :param segments: Array of dict structures describing segments with labels and descriptions. Each entry has following key/value pairs: "label":string label shown on the pie. "startSecs":number of seconds (including fractions) at which segment begins. "description":string - descriptive string given for the segment
     :returns: Generator that yields a PIL.Image object for every frame in sequence
     """
-
-    # we're going to draw a larger (super sampled) image and then scale it down
-    # to get smoothing (compensating for the lack of anti-aliased drawing functions
-    # in PIL)
-
+    (widthPixels, heightPixels) = widthHeightPixelsTuple
     width = widthPixels * superSamplingScale
     height = heightPixels * superSamplingScale
 
@@ -244,7 +243,7 @@ def genFrameImages((widthPixels, heightPixels), flashColourGen, flashColourGenPi
     
     # work out the segment description text, then check its size and adjust the fontsize to ensure it fits within bounding area
     if segments:
-        segment_description_text = "\n".join(map(lambda seg : seg["description"], segments))
+        segment_description_text = "\n".join([seg["description"] for seg in segments])
         tmpimg = Image.new("RGB", (width, height), color=BG_COLOUR)
         tmpdraw = ImageDraw.Draw(tmpimg)
         w,h = tmpdraw.multiline_textsize(segment_description_text, font=smallfont)
@@ -311,7 +310,7 @@ def genFrameImages((widthPixels, heightPixels), flashColourGen, flashColourGenPi
         topLeft = scaler.xy((10, 9))
         draw.text(topLeft, "%06d of %d %ss" % (frameNum, numFrames, imageName), font=font, fill=TEXT_COLOUR)
         topLeft = scaler.xy((10, 14))
-        draw.text(topLeft, u"%08.3f \u2264 t < %08.3f secs" % (timeSecs, nextTimeSecs), font=font, fill=TEXT_COLOUR)
+        draw.text(topLeft, "%08.3f \u2264 t < %08.3f secs" % (timeSecs, nextTimeSecs), font=font, fill=TEXT_COLOUR)
 
         topLeft = scaler.xy((10,dfy))
         draw.text(topLeft, "Duration: " + durationTimecode, font=font, fill=TEXT_COLOUR)
@@ -428,7 +427,7 @@ def genFrameImages((widthPixels, heightPixels), flashColourGen, flashColourGenPi
         yield rescaledImage
 
 
-def genSimpleFrameImages((widthPixels, heightPixels), flashColourGen, numFrames, BG_COLOUR=(0,0,0), frameSkipChecker=None):
+def genSimpleFrameImages(widthHeightPixelsTuple, flashColourGen, numFrames, BG_COLOUR=(0,0,0), frameSkipChecker=None):
     """\
     Generator that yields PIL Image objects representing video frames, one at a time
 
@@ -440,7 +439,7 @@ def genSimpleFrameImages((widthPixels, heightPixels), flashColourGen, numFrames,
     :param segments: Array of dict structures describing segments with labels and descriptions. Each entry has following key/value pairs: "label":string label shown on the pie. "startSecs":number of seconds (including fractions) at which segment begins. "description":string - descriptive string given for the segment
     :returns: Generator that yields a PIL.Image object for every frame in sequence
     """
-
+    (widthPixels, heightPixels) = widthHeightPixelsTuple
     flashCols = list(flashColourGen)[0:numFrames]
 
     for frameNum in range(0,numFrames):
@@ -462,3 +461,4 @@ def genSimpleFrameImages((widthPixels, heightPixels), flashColourGen, numFrames,
         draw.rectangle(topLeft + bottomRight, outline=None, fill=flashColour)
 
         yield img
+

@@ -2,6 +2,8 @@
 #
 # Copyright 2015 British Broadcasting Corporation
 # 
+# Modifications copyright 2020 TP Vision Belgium NV
+# 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -167,19 +169,19 @@ def genSequenceFromSampleIndices(toneStartEndTimings, gapGenFactory, eventGenFac
     for (startIndex, endIndex) in toneStartEndTimings:
         gen = iter(gapGenFactory())
         while n < startIndex:
-            yield gen.next()
+            yield next(gen)
             n=n+1
            
         gen = iter(eventGenFactory())
         while n < endIndex:
-            yield gen.next()
+            yield next(gen)
             n=n+1
              
 
     # after last entry in event timings sequence, just output "gap"
     gen = gapGenFactory()
     while True:
-        yield gen.next()
+        yield next(gen)
         
 
 def genSequenceStartEnds(centreTimes, eventDuration, unitsPerSecond, sampleRate):
@@ -235,5 +237,4 @@ def secsToTicks(tSecs, startTick, tickRate):
     :returns: the time value converted to the equivalent tick value
     """
     return tSecs * tickRate + startTick
-
 
