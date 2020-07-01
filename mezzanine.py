@@ -1,5 +1,6 @@
 import argparse
 import json
+import math
 import os
 import subprocess
 import sys
@@ -242,7 +243,7 @@ flash_block_size = int(round(int(height)*0.125,0))
 # Each QR code is saved to a PNG file in the qr directory.
 frame_duration = round(1/eval(framerate),10)
 frame_count = int(round(eval(framerate)*duration,0))
-frame_pts = float(round(start_indicator_frame_offset*frame_duration,7))
+frame_pts = float(round(start_indicator_frame_offset*frame_duration,10))
 
 print("Generating QR codes...", end='', flush=True)
 
@@ -270,7 +271,7 @@ for i in range(0,frame_count):
 	qr_img = qr.make_image(fill_color='white', back_color='black')
 	qr_img.save(qr_filename)
 	
-	frame_pts = round(frame_pts+frame_duration,7)
+	frame_pts = round(frame_pts+frame_duration,10)
 
 print("Done")
 
@@ -287,7 +288,7 @@ if not os.path.isdir(flash_file_dir):
 
 subprocess.run(['python', test_sequence_gen_script, 
 	'--duration', str(duration),
-	'--fps', framerate, 
+	'--fps', str(math.ceil(eval(framerate))), 
 	'--frame-filename', flash_file_dir / '%05d.png',
 	'--sampleRate', beep_audio_samplerate,
 	'--size', '1x1', 
