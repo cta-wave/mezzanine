@@ -26,8 +26,8 @@ Using the provided `requirements.txt`, execute the following to install the Pyth
 `pip install -r requirements.txt`
 
 Associated assets:
-* boundaries.png, boundaries.xcf, red_triangle.xcf frame boundary markers overlay created in Gimp, exported to PNG
-* Cousine-Regular.ttf monospaced font from the [Cousine font family][cousine]
+- `boundaries.png`, `boundaries.xcf`, `red_triangle.xcf` frame boundary markers overlay created in [GIMP][gimp], exported to PNG
+- `Cousine-Regular.ttf` monospaced font from the [Cousine font family][cousine]
 
 Tools:
 * [GIMP 2.10][gimp]
