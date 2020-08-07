@@ -1,4 +1,4 @@
-## Creating WAVE mezzanine content using a single Python script
+# Creating WAVE mezzanine content using a single Python script
 
 The steps to create WAVE mezzanine content have been combined into a single Python script `mezzanine.py`. 
 
@@ -33,15 +33,14 @@ Tools:
 * [GIMP 2.10][gimp]
 
 Mezzanine sources:
-* [WAVE original source files][waveoriginal] 
-
+* [WAVE original source files][wave-original] 
 
 For example, to generate an annotated mezzanine file you will need the following original files referenced above:
 - `tearsofsteel_4k.mov`
 - `boundaries.png`
 - `Cousine-Regular.ttf`
 
-You can then execute the following to produce the an annotated mezzanine output file: 
+You can then execute the following to produce the an annotated mezzanine output file:  
 `py mezzanine.py -s 00:00:07.250 -d 30 -f 30 -r 1280x720 -b boundaries.png -t Cousine-Regular.ttf -l A1 -q 4 --start-end-indicators enabled --window-len 6 tearsofsteel_4k.mov tos-30sec-example.mp4`
 
 The full details of the available commands for the script can be found by executing `py mezzanine.py -h`
@@ -52,10 +51,10 @@ The full details of the available commands for the script can be found by execut
 [cousine]: https://fonts.google.com/specimen/Cousine
 [ffmpeg]: https://ffmpeg.org
 [gimp]: https://gimp.org
-[waveorignial] http://dash-large-files.akamaized.net/WAVE/Original/
+[wave-orignial]: http://dash-large-files.akamaized.net/WAVE/Original/
 
 
-## Meta-script generating all annotated mezzanine streams
+# Meta-script generating all annotated mezzanine streams
 
 An additional Python script `metamezz.py` has been created to enable generation of all annotated mezzanine streams with a single command.
 The `metamezz.py` script calls `mezzanine.py` to generate each annotated mezzanine file, so the requirements for `metamezz.py` are the same as for `mezzanine.py`. 
