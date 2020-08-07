@@ -33,7 +33,7 @@ Tools:
 * [GIMP 2.10][gimp]
 
 Mezzanine sources:
-* [WAVE original source files][wave-original] 
+* [WAVE original source files][waveoriginal] 
 
 
 For example, to generate an annotated mezzanine file you will need the following original files referenced above:
@@ -41,7 +41,7 @@ For example, to generate an annotated mezzanine file you will need the following
 - `boundaries.png`
 - `Cousine-Regular.ttf`
 
-You can then execute the following to produce the an annotated mezzanine output file:
+You can then execute the following to produce the an annotated mezzanine output file: 
 `py mezzanine.py -s 00:00:07.250 -d 30 -f 30 -r 1280x720 -b boundaries.png -t Cousine-Regular.ttf -l A1 -q 4 --start-end-indicators enabled --window-len 6 tearsofsteel_4k.mov tos-30sec-example.mp4`
 
 The full details of the available commands for the script can be found by executing `py mezzanine.py -h`
@@ -52,7 +52,7 @@ The full details of the available commands for the script can be found by execut
 [cousine]: https://fonts.google.com/specimen/Cousine
 [ffmpeg]: https://ffmpeg.org
 [gimp]: https://gimp.org
-[wave-orignial] http://dash-large-files.akamaized.net/WAVE/Original/
+[waveorignial] http://dash-large-files.akamaized.net/WAVE/Original/
 
 
 ## Meta-script generating all annotated mezzanine streams
@@ -68,11 +68,11 @@ To generate the current set of [WAVE mezzanine content](http://dash-large-files.
 This uses the default parameters, assumes the source files are in the `source` folder and generates the annotated mezzanine files in the `mezzanine` folder.
 
 Additional parameters can be provided:
-- `-r *string_containing_JSON*` or `-rjf *path_to_JSON_file*` that provide JSON defining:
+- `-r string_containing_JSON` or `-rjf path_to_JSON_file` that provide JSON defining:
 	- The resolutions streams are generated in.
 	- The duration of each stream generated.
 	- The number of variants to create for each combination of resolution+duration.
-- `-fl *char*` that defines the starting label to use for the list of streams (e.g. 'A').
+- `-fl char` that defines the starting label to use for the list of streams (e.g. 'A').
 - `-t` that is a flag indicating a test run, which will parse the parameters and list the streams to generate, but won't actually generate the streams.
 
 Labels are used to identify the annotated mezzanine streams. They are displayed in the video, encoded in the QR codes displayed in the video, and included in the output filename.
