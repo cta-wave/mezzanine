@@ -61,6 +61,9 @@ The `metamezz.py` script calls `mezzanine.py` to generate each annotated mezzani
 
 For each source file, an output file prefix is required: `py metamezz.py source1.mov source1_output_prefix source2.mov source2_output_prefix` and so on.
 
+Output filenames have the following template: `<prefix>_<label>_<WxH>@<fps>_<duration-in-seconds>.mp4`  
+For example: `croatia_O2_3840x2160@50_60.mp4`  
+
 To generate the current set of [WAVE mezzanine content](https://dash-large-files.akamaized.net/WAVE/Mezzanine/) you can execute the following:
 `py metamezz.py source/tearsofsteel_4k.mov mezzanine/tos source/DVB_PQ10_VandV.mov mezzanine/croatia`
 
