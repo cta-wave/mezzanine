@@ -6,12 +6,11 @@ This script does the following to the source content:
 - Adds timecode, frame number with configurable zero padding, configurable label text and font:
 	- Displayed in video.
 	- Encoded in QR code displayed on each frame.
-- Option to configure QR code to alternate between either 2 or 4 positions.
-- Configurable border indicators (default: `boundaries.png`).
-- An A/V sync pattern is integrated at the top right of the video using modified synchronisation timing video test sequence generator scripts from [DVB companion screen synchronisation timing accuracy measurement](https://www.github.com/BBC/dvbcss-synctiming)
-to generate a sequence of "beeps" and "flashes" with an irregular pattern that only repeats after a configurable duration (default 31 seconds). 
-- Source content audio mixed with beeps to allow for visual lip-sync confirmation.
-- Option to add a dark green (`0x006400`) color frame to indicate the start of the video, and a dark red (`0x8B0000`) frame to indicate the end of the video.
+	- Option to configure QR code to alternate between either 2 or 4 positions.
+- Adds configurable border indicators (default: `boundaries.png`).
+- Integrates an A/V sync pattern at the top right of the video using modified synchronisation timing video test sequence generator scripts from [DVB companion screen synchronisation timing accuracy measurement](https://www.github.com/BBC/dvbcss-synctiming) to generate a sequence of "beeps" and "flashes" with an irregular pattern that only repeats after a configurable duration (default 31 seconds). 
+- Mixes source content audio with A/V sync beeps to allow for visual lip-sync confirmation.
+- Includes option to add a dark green (`0x006400`) color frame to indicate the start of the video, and a dark red (`0x8B0000`) frame to indicate the end of the video.
 - Video output configured to minimise lossy nature of transcoding and preserve properties of source content. The codec used depends on source content color space:
 	- H.264/AVC for BT.709 or undefined
 	- H.265/HEVC for BT.2020nc or other defined value
