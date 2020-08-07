@@ -181,7 +181,7 @@ if __name__ == "__main__":
 			print('+ Input: '+io)
 		else:
 			outputs.append(io)
-			print('+ Output: '+io+'_label_WxH@fps_duration-in-seconds.mp4 ')
+			print('+ Output: '+io+'_label_WxH@fps_duration-in-seconds.mp4')
 	
 	if test:
 		print("! Test run only. Output files will not be generated.")
