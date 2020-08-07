@@ -26,7 +26,7 @@ Using the provided `requirements.txt`, execute the following to install the Pyth
 `pip install -r requirements.txt`
 
 Associated assets:
-- `boundaries.png`, `boundaries.xcf`, `red_triangle.xcf` frame boundary markers overlay created in [GIMP][gimp], exported to PNG
+- `boundaries.png`, `boundaries.xcf`, `red_triangle.xcf` frame boundary markers overlay created in [GIMP][gimp]
 - `Cousine-Regular.ttf` monospaced font from the [Cousine font family][cousine]
 
 Tools:
@@ -71,29 +71,31 @@ Additional parameters can be provided:
 	- The resolutions streams are generated in.
 	- The duration of each stream generated.
 	- The number of variants to create for each combination of resolution+duration.
-- `-fl char` that defines the starting label to use for the list of streams (e.g. 'A').
-- `-t` that is a flag indicating a test run, which will parse the parameters and list the streams to generate, but won't actually generate the streams.
+- `-fl char` that defines the character to use for the label of first resolution in the list (e.g. 'A').
+- `-test` that is a flag indicating a test run, which will parse the parameters and list the streams to generate, but won't actually generate the streams.
 
-Labels are used to identify the annotated mezzanine streams. They are displayed in the video, encoded in the QR codes displayed in the video, and included in the output filename.
-The `metamezz.py` script uses a single character as the label, that is automatically incremented for each of the resolutions in the list, and starts with 'A' by default. 
-To be able to create multiple variants for some combinations of resolution+duration, a number is appended to every label, acting as an index. 
+Labels are used to identify the annotated mezzanine streams. They are displayed in the video, encoded in the QR codes displayed in the video, and included in the output filename.  
+In the `metamezz.py` script, each label is composed of a character and a number.  
+The character identifies the resolution and is automatically incremented for each of the resolutions in the list, starting with 'A' by default. 
+To be able to create multiple variants for some combinations of resolution+duration, a number is appended to every label, acting as an index.  
 For example, for the first resolution generated, 'A1' is the default label.
-When specifying N variants for the first resolution+duration combination, N streams will be created with the labels A1 .. AN.
+When specifying N variants for the first resolution+duration combination, N streams will be created with the labels A1..AN.
 
-The default list of resolution+duration+variant combinations is also included in the `all_resolutions.json` file. 
-The JSON structure used is: `{"WIDTHxHEIGHT":[[duration in seconds (int), number of variants (int)], [...]]}`
-Multiple combinations of duration and variants can be defined for each resolution. 
-The `all_resolutions.json` JSON file can be modified to suit your needs and passed to `metamezz.py` using the `-rjf *filename*` parameter.
+The default list of resolution+duration+variant combinations is defined in the `metamezz.py` script and is also included in the `all_resolutions.json` file. 
+The JSON structure used is: `{ "WIDTHxHEIGHT" : [ [duration in seconds (int), number of variants (int)], [...] ] }`  
+Multiple combinations of duration and variants can be defined for each resolution.  
+The `all_resolutions.json` JSON file can be modified to suit your needs and passed to `metamezz.py` using the `-rjf` parameter.
 
 The `metamezz.py` script uses the following parameter defaults that can only be modified in the script, as they are not expected to be changed often, for consistency reasons:
+- The script expects the presence of `mezzanine.py` in the same folder.
+- The default border indicators are used and `boundaries.png` is expected to be in the same folder.
 - The font is set to `Cousine-Regular.ttf` and is expected to be in the same folder.
 - 4 QR code positions are used.
 - The script seeks to 00:01:25 in the source content, unless the content is too short.
 - Start and end indicators are enabled.
 - The irregular AV sync pattern is set to repeat after 63 seconds.
-- The script expects the presence of `mezzanine.py` in the same folder.
 
-The full details of the available commands for the script can be found by executing `py metamezz.py -h`
+The full details of the available commands for the script can be found by executing `py metamezz.py -h`  
 
 
 # Historical mezzanine creation scripts
