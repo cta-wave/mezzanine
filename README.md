@@ -1,4 +1,4 @@
-# Creating WAVE mezzanine content using a single Python script
+# Creating WAVE mezzanine content using a Python script
 
 The steps to create WAVE mezzanine content have been combined into a single Python script `mezzanine.py`. 
 
