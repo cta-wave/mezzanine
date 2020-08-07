@@ -33,7 +33,7 @@ Tools:
 * [GIMP 2.10][gimp]
 
 Mezzanine sources:
-* [WAVE original source files][wave-original] 
+* [WAVE original source files][waveorignial]
 
 For example, to generate an annotated mezzanine file you will need the following original files referenced above:
 - `tearsofsteel_4k.mov`
@@ -51,7 +51,7 @@ The full details of the available commands for the script can be found by execut
 [cousine]: https://fonts.google.com/specimen/Cousine
 [ffmpeg]: https://ffmpeg.org
 [gimp]: https://gimp.org
-[wave-orignial]: http://dash-large-files.akamaized.net/WAVE/Original/
+[waveorignial]: https://dash-large-files.akamaized.net/WAVE/Original/
 
 
 # Meta-script generating all annotated mezzanine streams
@@ -61,7 +61,7 @@ The `metamezz.py` script calls `mezzanine.py` to generate each annotated mezzani
 
 For each source file, an output file prefix is required: `py metamezz.py source1.mov source1_output_prefix source2.mov source2_output_prefix` and so on.
 
-To generate the current set of [WAVE mezzanine content](http://dash-large-files.akamaized.net/WAVE/Mezzanine/) you can execute the following:
+To generate the current set of [WAVE mezzanine content](https://dash-large-files.akamaized.net/WAVE/Mezzanine/) you can execute the following:
 `py metamezz.py source/tearsofsteel_4k.mov mezzanine/tos source/DVB_PQ10_VandV.mov mezzanine/croatia`
 
 This uses the default parameters, assumes the source files are in the `source` folder and generates the annotated mezzanine files in the `mezzanine` folder.
@@ -96,7 +96,7 @@ The `metamezz.py` script uses the following parameter defaults that can only be 
 The full details of the available commands for the script can be found by executing `py metamezz.py -h`
 
 
-# Historical mezzanine creation scripts below
+# Historical mezzanine creation scripts
 ### Creating WAVE mezzanine content from Tears of Steel (ToS)
 
 ### Tools Used
