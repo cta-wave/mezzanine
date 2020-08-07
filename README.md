@@ -1,6 +1,107 @@
-# Creating WAVE mezzanine content from Tears of Steel (ToS)
+## Creating WAVE mezzanine content using a single Python script
 
-## Tools Used
+The steps to create WAVE mezzanine content have been combined into a single Python script `mezzanine.py`. 
+
+This script does the following to the source content:
+- Adds timecode, frame number with configurable zero padding, configurable label text and font:
+	- Displayed in video.
+	- Encoded in QR code displayed on each frame.
+- Option to configure QR code to alternate between either 2 or 4 positions.
+- Configurable border indicators (default: `boundaries.png`).
+- An A/V sync pattern is integrated at the top right of the video using modified synchronisation timing video test sequence generator scripts from [DVB companion screen synchronisation timing accuracy measurement](https://www.github.com/BBC/dvbcss-synctiming)
+to generate a sequence of "beeps" and "flashes" with an irregular pattern that only repeats after a configurable duration (default 31 seconds). 
+- Source content audio mixed with beeps to allow for visual lip-sync confirmation.
+- Option to add a dark green (`0x006400`) color frame to indicate the start of the video, and a dark red (`0x8B0000`) frame to indicate the end of the video.
+- Video output configured to minimise lossy nature of transcoding and preserve properties of source content. The codec used depends on source content color space:
+	- H.264/AVC for BT.709 or undefined
+	- H.265/HEVC for BT.2020nc or other defined value
+
+Requirements:
+* [Python 3][python]
+* [Pillow >=3.4][pillow]
+* [qrcode >=6.1][qrcode]
+* [ffmpeg 4.3.1][ffmpeg]
+* [ffprobe 4.3.1][ffmpeg]
+
+Using the provided `requirements.txt`, execute the following to install the Python dependancies:
+`pip install -r requirements.txt`
+
+Associated assets:
+* boundaries.png, boundaries.xcf, red_triangle.xcf frame boundary markers overlay created in Gimp, exported to PNG
+* Cousine-Regular.ttf monospaced font from the [Cousine font family][cousine]
+
+Tools:
+* [GIMP 2.10][gimp]
+
+Mezzanine sources:
+* [WAVE original source files][wave-original] 
+
+
+For example, to generate an annotated mezzanine file you will need the following original files referenced above:
+- `tearsofsteel_4k.mov`
+- `boundaries.png`
+- `Cousine-Regular.ttf`
+
+You can then execute the following to produce the an annotated mezzanine output file:
+`py mezzanine.py -s 00:00:07.250 -d 30 -f 30 -r 1280x720 -b boundaries.png -t Cousine-Regular.ttf -l A1 -q 4 --start-end-indicators enabled --window-len 6 tearsofsteel_4k.mov tos-30sec-example.mp4`
+
+The full details of the available commands for the script can be found by executing `py mezzanine.py -h`
+
+[python]: https://www.python.org/
+[pillow]: https://pypi.org/project/Pillow/
+[qrcode]: https://pypi.org/project/qrcode/
+[cousine]: https://fonts.google.com/specimen/Cousine
+[ffmpeg]: https://ffmpeg.org
+[gimp]: https://gimp.org
+[wave-orignial] http://dash-large-files.akamaized.net/WAVE/Original/
+
+
+## Meta-script generating all annotated mezzanine streams
+
+An additional Python script `metamezz.py` has been created to enable generation of all annotated mezzanine streams with a single command.
+The `metamezz.py` script calls `mezzanine.py` to generate each annotated mezzanine file, so the requirements for `metamezz.py` are the same as for `mezzanine.py`. 
+
+For each source file, an output file prefix is required: `py metamezz.py source1.mov source1_output_prefix source2.mov source2_output_prefix` and so on.
+
+To generate the current set of [WAVE mezzanine content](http://dash-large-files.akamaized.net/WAVE/Mezzanine/) you can execute the following:
+`py metamezz.py source/tearsofsteel_4k.mov mezzanine/tos source/DVB_PQ10_VandV.mov mezzanine/croatia`
+
+This uses the default parameters, assumes the source files are in the `source` folder and generates the annotated mezzanine files in the `mezzanine` folder.
+
+Additional parameters can be provided:
+- `-r *string_containing_JSON*` or `-rjf *path_to_JSON_file*` that provide JSON defining:
+	- The resolutions streams are generated in.
+	- The duration of each stream generated.
+	- The number of variants to create for each combination of resolution+duration.
+- `-fl *char*` that defines the starting label to use for the list of streams (e.g. 'A').
+- `-t` that is a flag indicating a test run, which will parse the parameters and list the streams to generate, but won't actually generate the streams.
+
+Labels are used to identify the annotated mezzanine streams. They are displayed in the video, encoded in the QR codes displayed in the video, and included in the output filename.
+The `metamezz.py` script uses a single character as the label, that is automatically incremented for each of the resolutions in the list, and starts with 'A' by default. 
+To be able to create multiple variants for some combinations of resolution+duration, a number is appended to every label, acting as an index. 
+For example, for the first resolution generated, 'A1' is the default label.
+When specifying N variants for the first resolution+duration combination, N streams will be created with the labels A1 .. AN.
+
+The default list of resolution+duration+variant combinations is also included in the `all_resolutions.json` file. 
+The JSON structure used is: `{"WIDTHxHEIGHT":[[duration in seconds (int), number of variants (int)], [...]]}`
+Multiple combinations of duration and variants can be defined for each resolution. 
+The `all_resolutions.json` JSON file can be modified to suit your needs and passed to `metamezz.py` using the `-rjf *filename*` parameter.
+
+The `metamezz.py` script uses the following parameter defaults that can only be modified in the script, as they are not expected to be changed often, for consistency reasons:
+- The font is set to `Cousine-Regular.ttf` and is expected to be in the same folder.
+- 4 QR code positions are used.
+- The script seeks to 00:01:25 in the source content, unless the content is too short.
+- Start and end indicators are enabled.
+- The irregular AV sync pattern is set to repeat after 63 seconds.
+- The script expects the presence of `mezzanine.py` in the same folder.
+
+The full details of the available commands for the script can be found by executing `py metamezz.py -h`
+
+
+# Historical mezzanine creation scripts below
+### Creating WAVE mezzanine content from Tears of Steel (ToS)
+
+### Tools Used
 
 * [Cousine monospaced font][cousine]
 * [ffmpeg 4.2.2][ffmpeg]
@@ -11,7 +112,7 @@
 * [Ubuntu 20.04 LTS][ubuntu]
 * [VLC 3.0.10][vlc]
 
-## Steps
+### Steps
 
 1. Download 1080p version of ToS from the Blender mirror site:
 `wget http://ftp.nluug.nl/pub/graphics/blender/demo/movies/ToS/ToS-4k-1920.mov`
@@ -48,7 +149,7 @@
 [ubuntu]: https://ubuntu.com
 [vlc]: https://fonts.google.com/specimen/Cousine
 
-## Alternate Single Script Method
+### Alternate Single Script Method
 
 The above steps have been combined into a single script `mezzanine.sh`. To accomplish the above steps with the same result you will need the following original files referenced above:
 
@@ -60,37 +161,3 @@ You can then execute the following to produce the equivalent output file:
 `./mezzanine.sh -s 00:00:07.250 -d 30 -f 30 -b boundaries.png -t "Cousine-Regular.ttf" ToS-4k-1920.mov tos-30sec-final.mp4`
 
 The full details of the available commands for the script can be found by executing `./mezzanine.sh -h`
-
-## Alternate Single Python Script Method
-
-The above steps have also been combined into a single Python script `mezzanine.py`. 
-
-In addition to the abovementioned functionality:
-- An A/V sync pattern is integrated at the top right of the annoatated mezzanine video generated by this script using modified synchronisation timing video test sequence generator scripts from [DVB companion screen synchronisation timing accuracy measurement](https://www.github.com/BBC/dvbcss-synctiming)
-to generate a sequence of "beeps" and "flashes" with an irregular pattern that only repeats after a configurable duration (default 31 seconds). 
-- Optionally add a dark green (`0x006400`) color frame to indicate the start of the video, and a dark red (`0x8B0000`) frame to indicate the end of the video using the `--start-end-indicators` argument.
-- Video output is H.264/AVC for BT.709 source content and H.265/HEVC for BT.2020 source content.
-
-Requirements:
-
-* [Python 3][python]
-* [Pillow >=3.4][pillow]
-* [qrcode >=6.1][qrcode]
-
-Using the provided `requirements.txt`execute the following to install the dependancies:
-`pip install -r requirements.txt`
-
-To accomplish the above steps with the same result you will need the following original files referenced above:
-
-- `ToS-4k-1920.mov`
-- `boundaries.png`
-- `Cousine-Regular.ttf`
-
-You can then execute the following to produce the equivalent output file:
-`py mezzanine.py -s 00:00:07.250 -d 30 -f 30 -b boundaries.png -t "Cousine-Regular.ttf" ToS-4k-1920.mov tos-30sec-final.mp4`
-
-The full details of the available commands for the script can be found by executing `py mezzanine.py -h`
-
-[python]: https://www.python.org/
-[pillow]: https://pypi.org/project/Pillow/
-[qrcode]: https://pypi.org/project/qrcode/
