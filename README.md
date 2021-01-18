@@ -3,7 +3,7 @@
 The steps to create WAVE mezzanine content have been combined into a single Python script `mezzanine.py`. 
 
 This script does the following to the source content:
-- Adds timecode, frame number with configurable zero padding, configurable label text and font:
+- Adds timecode, frame number with configurable zero padding, frame rate, configurable label text and font:
 	- Displayed in video.
 	- Encoded in QR code displayed on each frame.
 	- Option to configure QR code to alternate between either 2 or 4 positions.
@@ -54,6 +54,18 @@ The full details of the available commands for the script can be found by execut
 [waveorignial]: https://dash-large-files.akamaized.net/WAVE/Original/
 
 
+# Adding a second audio track to a mezzanine stream
+The `add_second_audio_track.py` Python script uses the Python [`pyttsx3`][pyttsx3] library to create an audio file with the spoken audio "English".
+This is mixed with the original audio of a mezzanine file, repeating the spoken audio every 15 seconds. 
+A new copy of the original mezzanine stream is  created, incorporating the new audio track as a second audio track. The first audio track remains the orignal mezzanine audio.
+
+The output file naming convention is as follows: 
+<mezzanine_stream_name>_2ndAudio[English].<mezzanine_stream_file_extension>
+E.g. for `tos_A1_480x270@30_60.mp4` the script creates `tos_A1_480x270@30_60_2ndAudio[English].mp4`
+
+[pyttsx3]: https://github.com/nateshmbhat/pyttsx3
+
+
 # Meta-script generating all annotated mezzanine streams
 
 An additional Python script `metamezz.py` has been created to enable generation of all annotated mezzanine streams with a single command.
@@ -64,10 +76,10 @@ For each source file, an output file prefix is required: `py metamezz.py source1
 Output filenames have the following template: `<prefix>_<label>_<WxH>@<fps>_<duration-in-seconds>.mp4`  
 For example: `croatia_O2_3840x2160@50_60.mp4`  
 
-To generate the current set of [WAVE mezzanine content](https://dash-large-files.akamaized.net/WAVE/Mezzanine/) you can execute the following:
-`py metamezz.py source/tearsofsteel_4k.mov mezzanine/tos source/DVB_PQ10_VandV.mov mezzanine/croatia`
+To generate the a set of 29.97/30/59.94/60Hz [WAVE mezzanine content](https://dash-large-files.akamaized.net/WAVE/Mezzanine/) you can execute the following:
+`py metamezz.py source/tearsofsteel_4k.mov mezzanine/tos`
 
-This uses the default parameters, assumes the source files are in the `source` folder and generates the annotated mezzanine files in the `mezzanine` folder.
+This uses the default parameters, assumes the source file is in the `source` folder and generates the annotated mezzanine files in the `mezzanine` folder.
 
 Additional parameters can be provided:
 - `-r string_containing_JSON` or `-rjf path_to_JSON_file` that provide JSON defining:
@@ -75,7 +87,7 @@ Additional parameters can be provided:
 	- The duration of each stream generated.
 	- The number of variants to create for each combination of resolution+duration.
 - `-fl char` that defines the character to use for the label of first resolution in the list (e.g. 'A').
-- `-test` that is a flag indicating a test run, which will parse the parameters and list the streams to generate, but won't actually generate the streams.
+- `--test` that is a flag indicating a test run, which will parse the parameters and list the streams to generate, but won't actually generate the streams.
 
 Labels are used to identify the annotated mezzanine streams. They are displayed in the video, encoded in the QR codes displayed in the video, and included in the output filename.  
 In the `metamezz.py` script, each label is composed of a character and a number.  
@@ -85,8 +97,8 @@ For example, for the first resolution generated, 'A1' is the default label.
 When specifying N variants for the first resolution+duration combination, N streams will be created with the labels A1..AN.
 
 The default list of resolution+duration+variant combinations is defined in the `metamezz.py` script and is also included in the `all_resolutions.json` file. 
-The JSON structure used is: `{ "WIDTHxHEIGHT" : [ [duration in seconds (int), number of variants (int)], [...] ] }`  
-Multiple combinations of duration and variants can be defined for each resolution.  
+The JSON structure used is: `{ "WIDTHxHEIGHT" : [ [framerate (str), duration in seconds (int), number of variants (int), add second audio track (bool)], [...] ] }`  
+Multiple combinations of framerate, duration and variants (with/without second audio track) can be defined for each resolution.  
 The `all_resolutions.json` JSON file can be modified to suit your needs and passed to `metamezz.py` using the `-rjf` parameter.
 
 The `metamezz.py` script uses the following parameter defaults that can only be modified in the script, as they are not expected to be changed often, for consistency reasons:

@@ -162,8 +162,15 @@ if not os.path.isfile(args.input):
 	
 if not os.path.isfile(boundaries):
 	sys.exit("Boundaries image file \""+boundaries+"\" does not exist.")
-
 	
+# Create output file directory if it does not exist
+output = Path(args.output)
+if not os.path.isdir(output.parent):
+	try:
+		Path.mkdir(output.parent, parents=True)
+	except OSError:
+		print ("Failed to create the directory for output mezzanine stream.")
+
 # Set output video encoding parameters based on the following properties of the original source video:
 # color range, color space, pixel format, primaries and transfer function
 source_videoproperties = subprocess.check_output(['ffprobe', '-i', args.input, '-show_streams', '-select_streams', 'v', '-loglevel', '0', '-print_format', 'json'])
@@ -244,6 +251,7 @@ flash_block_size = int(round(int(height)*0.125,0))
 frame_duration = round(1/eval(framerate),10)
 frame_count = int(round(eval(framerate)*duration,0))
 frame_pts = float(round(start_indicator_frame_offset*frame_duration,10))
+frame_rate = round(eval(framerate),3)
 
 print("Generating QR codes...", end='', flush=True)
 
@@ -265,7 +273,7 @@ for i in range(0,frame_count):
 		box_size=6,
 		border=4,
 		)
-	qr.add_data(label+';'+timecode+';'+padded_frame)
+	qr.add_data(label+';'+timecode+';'+padded_frame+';'+str(frame_rate))
 	qr.make(fit=True)
 	
 	qr_img = qr.make_image(fill_color='white', back_color='black')
@@ -372,7 +380,8 @@ subprocess.call(['ffmpeg',
 				fontfile='+font+':\
 				text=\'%{pts\:hms\:'
 					+str((lambda x: x/eval(framerate) if x > 0 else 0)(start_indicator_frame_offset))
-					+'};%{eif\:n+'+str(start_indicator_frame_offset)+'\:d\:'+str(frame_number_padding)+'}\':\
+					+'};%{eif\:n+'+str(start_indicator_frame_offset)+'\:d\:'+str(frame_number_padding)
+					+'};'+str(frame_rate)+'\':\
 				x=(w-tw)/2:\
 				y=h-(4*lh):\
 				fontcolor=white:\
@@ -419,7 +428,7 @@ subprocess.call(['ffmpeg',
 	+['-c:a', 'aac', '-b:a', '320k', '-ac', '2',
 	'-r', framerate,
 	'-y',
-	args.output])
+	str(output)])
 
 
 # Remove the temporaray files for the QR codes, flashes and beeps
