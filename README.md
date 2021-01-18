@@ -55,48 +55,54 @@ The full details of the available commands for the script can be found by execut
 
 
 # Adding a second audio track to a mezzanine stream
-The `add_second_audio_track.py` Python script uses the Python [`pyttsx3`][pyttsx3] library to create an audio file with the spoken audio "English".
+The `add_second_audio_track.py` Python script uses the [`pyttsx3`][pyttsx3] library to create an audio file with the spoken audio "English".
+
 This is mixed with the original audio of a mezzanine file, repeating the spoken audio every 15 seconds. 
-A new copy of the original mezzanine stream is  created, incorporating the new audio track as a second audio track. The first audio track remains the orignal mezzanine audio.
+
+A new copy of the original mezzanine stream is created, incorporating the new audio track as a second audio track. The first audio track remains the orignal mezzanine audio.
 
 The output file naming convention is as follows: 
-<mezzanine_stream_name>_2ndAudio[English].<mezzanine_stream_file_extension>
-E.g. for `tos_A1_480x270@30_60.mp4` the script creates `tos_A1_480x270@30_60_2ndAudio[English].mp4`
+`<mezzanine_stream_name>_2ndAudio[English].<mezzanine_stream_file_extension>`
+
+Usage example: `add_second_audio_track.py tos_A1_480x270@30_60.mp4` creates `tos_A1_480x270@30_60_2ndAudio[English].mp4`
 
 [pyttsx3]: https://github.com/nateshmbhat/pyttsx3
 
 
 # Meta-script generating all annotated mezzanine streams
 
-An additional Python script `metamezz.py` has been created to enable generation of all annotated mezzanine streams with a single command.
+An additional Python script `metamezz.py` has been created to enable generation of multiple annotated mezzanine streams with a single command.
 The `metamezz.py` script calls `mezzanine.py` to generate each annotated mezzanine file, so the requirements for `metamezz.py` are the same as for `mezzanine.py`. 
 
-For each source file, an output file prefix is required: `py metamezz.py source1.mov source1_output_prefix source2.mov source2_output_prefix` and so on.
+You must provide a source file and an output file prefix: `py metamezz.py source1.mov source1_output_prefix`
 
 Output filenames have the following template: `<prefix>_<label>_<WxH>@<fps>_<duration-in-seconds>.mp4`  
 For example: `croatia_O2_3840x2160@50_60.mp4`  
 
-To generate the a set of 29.97/30/59.94/60Hz [WAVE mezzanine content](https://dash-large-files.akamaized.net/WAVE/Mezzanine/) you can execute the following:
+To generate a set of 29.97/30/59.94/60Hz [WAVE mezzanine content](https://dash-large-files.akamaized.net/WAVE/Mezzanine/) you can execute the following:
+
 `py metamezz.py source/tearsofsteel_4k.mov mezzanine/tos`
 
-This uses the default parameters, assumes the source file is in the `source` folder and generates the annotated mezzanine files in the `mezzanine` folder.
+This uses the default parameters, assumes the source file is in the `source` folder and generates the annotated mezzanine files in the `mezzanine` folder with the prefix `tos`.
 
 Additional parameters can be provided:
-- `-r string_containing_JSON` or `-rjf path_to_JSON_file` that provide JSON defining:
+- `-r <string_containing_JSON>` or `-rjf <path_to_JSON_file>` that provide JSON defining:
 	- The resolutions streams are generated in.
+	- The frame rate of each stream generated.
 	- The duration of each stream generated.
-	- The number of variants to create for each combination of resolution+duration.
-- `-fl char` that defines the character to use for the label of first resolution in the list (e.g. 'A').
-- `--test` that is a flag indicating a test run, which will parse the parameters and list the streams to generate, but won't actually generate the streams.
+	- The number of variants to create for each combination of resolution+framerate+duration.
+	- Whether to add a second audio track. 
+- `-fl <char>` that defines the character to use for the label of first resolution in the list (e.g. 'A').
+- `--test 1` is a flag indicating a test run, which will parse the parameters and list the streams to generate, but won't actually generate the streams.
 
-Labels are used to identify the annotated mezzanine streams. They are displayed in the video, encoded in the QR codes displayed in the video, and included in the output filename.  
-In the `metamezz.py` script, each label is composed of a character and a number.  
+Labels are used to identify the annotated mezzanine streams. They are displayed in the video, encoded in the QR codes displayed in the video, and included in the output filename. In the `metamezz.py` script, each label is composed of a character and a number. 
+
 The character identifies the resolution and is automatically incremented for each of the resolutions in the list, starting with 'A' by default. 
-To be able to create multiple variants for some combinations of resolution+duration, a number is appended to every label, acting as an index.  
+To be able to create multiple variants for some combinations of resolution+framerate+duration, a number is appended to every label, acting as an index.  
 For example, for the first resolution generated, 'A1' is the default label.
-When specifying N variants for the first resolution+duration combination, N streams will be created with the labels A1..AN.
+When specifying N variants for the first resolution+framerate+duration combination, N streams will be created with the labels A1..AN.
 
-The default list of resolution+duration+variant combinations is defined in the `metamezz.py` script and is also included in the `all_resolutions.json` file. 
+The default list of resolution+framerate+duration+variant combinations is defined in the `metamezz.py` script and is also included in the `all_resolutions.json` file. 
 The JSON structure used is: `{ "WIDTHxHEIGHT" : [ [framerate (str), duration in seconds (int), number of variants (int), add second audio track (bool)], [...] ] }`  
 Multiple combinations of framerate, duration and variants (with/without second audio track) can be defined for each resolution.  
 The `all_resolutions.json` JSON file can be modified to suit your needs and passed to `metamezz.py` using the `-rjf` parameter.
