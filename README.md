@@ -79,7 +79,7 @@ You must provide a source file and an output file prefix: `py metamezz.py source
 Output filenames have the following template: `<prefix>_<label>_<WxH>@<fps>_<duration-in-seconds>.mp4`  
 For example: `croatia_O2_3840x2160@50_60.mp4`  
 
-To generate a set of 29.97/30/59.94/60Hz [WAVE mezzanine content](https://dash-large-files.akamaized.net/WAVE/Mezzanine/) you can execute the following:
+To generate a set of 30Hz [WAVE mezzanine content](https://dash-large-files.akamaized.net/WAVE/Mezzanine/) you can execute the following:
 
 `py metamezz.py source/tearsofsteel_4k.mov mezzanine/tos`
 

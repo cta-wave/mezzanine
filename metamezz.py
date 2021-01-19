@@ -96,55 +96,7 @@ if __name__ == "__main__":
 		'1024x576':[['30',60,3,False]],
 		'1280x720':[['30',60,3,False]],
 		'1600x900':[['30',60,1,False]],
-		'1920x1080':[['30',60,3,False],['30',60,1,True]],
-		'2560x1440':[['30',60,1,False]],
-		'3200x1800':[['30',60,1,False]],
-		'3840x2160':[['30',60,1,False]],
-		'480x270':[['30000/1001',60,3,False]],
-		'512x288':[['30000/1001',60,1,False]],
-		'640x360':[['30000/1001',60,1,False]],
-		'704x396':[['30000/1001',60,1,False]],
-		'720x404':[['30000/1001',60,1,False]],
-		'768x432':[['30000/1001',60,1,False]],
-		'852x480':[['30000/1001',60,1,False]],
-		'960x540':[['30000/1001',60,1,False]],
-		'1024x576':[['30000/1001',60,3,False]],
-		'1280x720':[['30000/1001',60,3,False]],
-		'1600x900':[['30000/1001',60,1,False]],
-		'1920x1080':[['30000/1001',60,3,False],['30000/1001',60,1,True]],
-		'2560x1440':[['30000/1001',60,1,False]],
-		'3200x1800':[['30000/1001',60,1,False]],
-		'3840x2160':[['30000/1001',60,1,False]],
-		'480x270':[['60',60,3,False]],
-		'512x288':[['60',60,1,False]],
-		'640x360':[['60',60,1,False]],
-		'704x396':[['60',60,1,False]],
-		'720x404':[['60',60,1,False]],
-		'768x432':[['60',60,1,False]],
-		'852x480':[['60',60,1,False]],
-		'960x540':[['60',60,1,False]],
-		'1024x576':[['60',60,3,False]],
-		'1280x720':[['60',60,3,False]],
-		'1600x900':[['60',60,1,False]],
-		'1920x1080':[['60',60,3,False],['60',60,1,True]],
-		'2560x1440':[['60',60,1,False]],
-		'3200x1800':[['60',60,1,False]],
-		'3840x2160':[['60',60,1,False]],
-		'480x270':[['60000/1001',60,3,False]],
-		'512x288':[['60000/1001',60,1,False]],
-		'640x360':[['60000/1001',60,1,False]],
-		'704x396':[['60000/1001',60,1,False]],
-		'720x404':[['60000/1001',60,1,False]],
-		'768x432':[['60000/1001',60,1,False]],
-		'852x480':[['60000/1001',60,1,False]],
-		'960x540':[['60000/1001',60,1,False]],
-		'1024x576':[['60000/1001',60,3,False]],
-		'1280x720':[['60000/1001',60,3,False]],
-		'1600x900':[['60000/1001',60,1,False]],
-		'1920x1080':[['60000/1001',60,3,False],['60000/1001',60,1,True]],
-		'2560x1440':[['60000/1001',60,1,False]],
-		'3200x1800':[['60000/1001',60,1,False]],
-		'3840x2160':[['60000/1001',60,1,False]],
+		'1920x1080':[['30',60,3,False],['30',60,1,True]]
 	}
 	
 	# Default first label
@@ -226,9 +178,9 @@ if __name__ == "__main__":
 	for res, variants in resolutions.items():
 		for variant in list(variants):
 			if variant[3]:
-				print(res+' '+str(eval(variant[0]))+'fps '+str(variant[1])+'s '+str(variant[2])+' variant(s) with a second audio track')
+				print(res+' '+str(round(eval(variant[0]),3))+'fps '+str(variant[1])+'s '+str(variant[2])+' variant(s) with a second audio track')
 			else:
-				print(res+' '+str(eval(variant[0]))+'fps '+str(variant[1])+'s '+str(variant[2])+' variant(s)')
+				print(res+' '+str(round(eval(variant[0]),3))+'fps '+str(variant[1])+'s '+str(variant[2])+' variant(s)')
 	print()
 
 	# Basic method of differentiating the input filenames (that include filename extensions) from the corresponding output prefixes
