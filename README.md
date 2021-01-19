@@ -79,19 +79,20 @@ You must provide a source file and an output file prefix: `py metamezz.py source
 Output filenames have the following template: `<prefix>_<label>_<WxH>@<fps>_<duration-in-seconds>.mp4`  
 For example: `croatia_O2_3840x2160@50_60.mp4`  
 
-To generate a set of 30Hz [WAVE mezzanine content](https://dash-large-files.akamaized.net/WAVE/Mezzanine/) you can execute the following:
+To generate a set of [WAVE mezzanine content](https://dash-large-files.akamaized.net/WAVE/Mezzanine/) for 29.97/30/59.94/60Hz you can execute the following:
 
-`py metamezz.py source/tearsofsteel_4k.mov mezzanine/tos`
+`py metamezz.py source/tearsofsteel_4k.mov mezzanine/tos -rjf resolutions_30_60.json`
 
-This uses the default parameters, assumes the source file is in the `source` folder and generates the annotated mezzanine files in the `mezzanine` folder with the prefix `tos`.
+This assumes the source file is in the `source` folder and generates the annotated mezzanine files in the `mezzanine` folder with the prefix `tos`.
 
-Additional parameters can be provided:
+Parameters:
 - `-r <string_containing_JSON>` or `-rjf <path_to_JSON_file>` that provide JSON defining:
 	- The resolutions streams are generated in.
 	- The frame rate of each stream generated.
 	- The duration of each stream generated.
+	- The label to use for each combination of resolution+framerate+duration.
 	- The number of variants to create for each combination of resolution+framerate+duration.
-	- Whether to add a second audio track. 
+	- Whether to add a second audio track to the streams created for a resolution+framerate+duration combination. 
 - `-fl <char>` that defines the character to use for the label of first resolution in the list (e.g. 'A').
 - `--test 1` is a flag indicating a test run, which will parse the parameters and list the streams to generate, but won't actually generate the streams.
 
@@ -102,10 +103,11 @@ To be able to create multiple variants for some combinations of resolution+frame
 For example, for the first resolution generated, 'A1' is the default label.
 When specifying N variants for the first resolution+framerate+duration combination, N streams will be created with the labels A1..AN.
 
-The default list of resolution+framerate+duration+variant combinations is defined in the `metamezz.py` script and is also included in the `all_resolutions.json` file. 
-The JSON structure used is: `{ "WIDTHxHEIGHT" : [ [framerate (str), duration in seconds (int), number of variants (int), add second audio track (bool)], [...] ] }`  
+A list of 29.97/30/59.94/60Hz resolution+framerate+duration+label+variant combinations is defined in the `resolutions_30_60.json` file. 
+A list of 25/50Hz resolution+framerate+duration+label+variant combinations is defined in the `resolutions_25_50.json` file. 
+The JSON structure used is: `{ "WIDTHxHEIGHT" : [ [framerate (str), duration in seconds (int), label (str), number of variants (int), add second audio track (bool)], [...] ] }`  
 Multiple combinations of framerate, duration and variants (with/without second audio track) can be defined for each resolution.  
-The `all_resolutions.json` JSON file can be modified to suit your needs and passed to `metamezz.py` using the `-rjf` parameter.
+These JSON files can be modified to suit your needs and passed to `metamezz.py` using the `-rjf` parameter.
 
 The `metamezz.py` script uses the following parameter defaults that can only be modified in the script, as they are not expected to be changed often, for consistency reasons:
 - The script expects the presence of `mezzanine.py` in the same folder.

@@ -2,23 +2,18 @@ import os
 import subprocess
 
 
-def generate_streams(input, source_duration, mezzanine_gen_script, font, label, qr_positions, resolutions, seek, start_end_indicators, window_len, output, second_audio_gen_script, test):
+def generate_streams(input, source_duration, mezzanine_gen_script, font, qr_positions, resolutions, seek, start_end_indicators, window_len, output, second_audio_gen_script, test):
 	"""\
-	Calls the WAVE mezzanine generation script to create annotated versions of the input source content
-	for each of the selected resolution-duration-variant combinations.
-	Variants are streams that are identical except for their labels, which have a number appended.
-	E.g. with label 'A' when generating 2 variants, output streams will have labels 'A1' and 'A2'.
+	Calls the WAVE mezzanine generation script to create annotated mezzanine streams using the input source content
+	for each of the combinations defined in the resolutions parameter.
 	
 	:param input: The path to the source content for which annotated mezzanine streams will be generated.
 	:param source_duration: The source content duration (in seconds).
 	:param mezzanine_gen_script: The path to the mezzanine generation Python script.
 	:param font: The path to/name of the font file to use when generating the annotations.
-	:param label: The initial label to use for the first resolution in the list. 
-				A single character is expected (e.g. 'A'). Will be incremented in the ASCII value order. 
-				Numbers will be appended to indicate the variant (e.g. 'A1').
 	:param qr_positions: The number of annotation on-screen QR code positions to use, may be 2 or 4.
-	:param resolutions: Dictionary containing the combinations of resolution, duration and label variant to generate using the source content. 
-						Structure: {'WIDTHxHEIGHT':[[framerate (str), duration in seconds (int), number of variants (int), add second audio track (bool)], []]}
+	:param resolutions: Dictionary containing the combinations to generate annotated mezzanine streams for, using the source content. 
+						Structure: {'WIDTHxHEIGHT':[[framerate (str), duration in seconds (int), label (str), number of variants (int), add second audio track (bool)], []]}
 	:param seek: Seeks the source file to a starting position. Format must follow ffmpeg -ss parameter.
 	:param start_end_indicators: Append a single frame before and after the source content, to signal the start and end of the test sequence. 
 								 May be "enabled", "disabled", "start" (only) or "end" (only).
@@ -32,11 +27,11 @@ def generate_streams(input, source_duration, mezzanine_gen_script, font, label, 
 		for variant in resolutions.get(res):
 			fps = variant[0]
 			duration = variant[1]
-			nb_variant_labels = variant[2]
-			add_second_audio_track = variant[3]
+			nb_variant_labels = variant[3]
+			add_second_audio_track = variant[4]
 			variant_label_range = range(nb_variant_labels)
 			for variant_label in list(variant_label_range): 
-				label_str = chr(label)+str(variant_label+1)
+				label_str = variant[2]+str(variant_label+1)
 				if add_second_audio_track:
 					print(output+'_'+label_str+'_'+res+'@'+str(round(eval(fps),2))+'_'+str(duration)+'_2ndAudio[English].mp4')
 				else:
@@ -60,7 +55,6 @@ def generate_streams(input, source_duration, mezzanine_gen_script, font, label, 
 						subprocess.run(['python', second_audio_gen_script, 
 								output+'_'+label_str+'_'+res+'@'+str(round(eval(fps),2))+'_'+str(duration)+'.mp4'
 								])
-		label += 1
 
 
 if __name__ == "__main__":
@@ -76,31 +70,29 @@ if __name__ == "__main__":
 	# Dictionary of resolutions (keys) with values indicating:
 	#		- the frame rate of the stream(s) to create, 
 	#		- the length of the stream(s) to create in seconds, 
-	#		- the number of variants of this length,
-	#		- whether to add a second audio track to these variants (0 or 1)
+	#		- the label to use for these variants,
+	#		- the number of variants with this resolution, frame rate and label,
+	#		- whether to add a second audio track to these variants (True or False)
 	# Format: 
-	#	'WIDTHxHEIGHT':[[framerate (str), duration in seconds (int), number of variants (int), add second audio track (bool)], []]
+	#	'WIDTHxHEIGHT':[[framerate (str), duration in seconds (int), label (str), number of variants (int), add second audio track (bool)], []]
 	# Notes: 
 	#	Fractional rates must be specified as division operations e.g. '30000/1001'. 
 	# 	Variants are streams that are identical except for their labels, which have a number appended.
 	# 	E.g. with label 'A' when generating 2 variants, output streams will have labels 'A1' and 'A2'.
 	resolutions = {
-		'480x270':[['30',60,3,False]],
-		'512x288':[['30',60,1,False]],
-		'640x360':[['30',60,1,False]],
-		'704x396':[['30',60,1,False]],
-		'720x404':[['30',60,1,False]],
-		'768x432':[['30',60,1,False]],
-		'852x480':[['30',60,1,False]],
-		'960x540':[['30',60,1,False]],
-		'1024x576':[['30',60,3,False]],
-		'1280x720':[['30',60,3,False]],
-		'1600x900':[['30',60,1,False]],
-		'1920x1080':[['30',60,3,False],['30',60,1,True]]
+		'480x270':[['30',60,"A",3,False]],
+		'512x288':[['30',60,"B",1,False]],
+		'640x360':[['30',60,"C",1,False]],
+		'704x396':[['30',60,"D",1,False]],
+		'720x404':[['30',60,"E",1,False]],
+		'768x432':[['30',60,"F",1,False]],
+		'852x480':[['30',60,"G",1,False]],
+		'960x540':[['30',60,"H",1,False]],
+		'1024x576':[['30',60,"I",3,False]],
+		'1280x720':[['30',60,"J",3,False]],
+		'1600x900':[['30',60,"K",1,False]],
+		'1920x1080':[['30',60,"L",3,False],['30',60,"L",1,True]]
 	}
-	
-	# Default first label
-	first_label = ord('A')
 	
 	# Arrays of source files (inputs) and associated output file prefixes (outputs)
 	inputs = []
@@ -134,11 +126,6 @@ if __name__ == "__main__":
 		help="Specifies the path to a JSON file containing resolutions, duration and number of label variants in which to generate the content. List resolutions from lowest to highest. JSON format: {\"WIDTHxHEIGHT\":[[framerate (str), duration in seconds (int), number of variants (int), add second audio track (bool)], []]}")
 		
 	parser.add_argument(
-		'-fl', '--first-label', dest='first_label', action='store',
-		required=False, 
-		help="Set the first label to use for generating the mezzanine streams. Default: "+chr(first_label))
-		
-	parser.add_argument(
 		'--test', dest='test', action='store',
 		type=bool, required=False, nargs='?',
 		help="This flag indicates the script should process the parameters and list the output streams to generate, without actually generating any streams. Default: False")
@@ -164,9 +151,6 @@ if __name__ == "__main__":
 			print("Failed to parse JSON resolutions file. Ensure the file contains valid JSON. Check the path to the JSON file is correct.")
 			sys.exit("Mezzanine creation aborted.")
 	
-	if args.first_label is not None:
-		first_label = ord(args.first_label)
-	
 	if args.test is not None:
 		test = args.test
 	
@@ -177,10 +161,10 @@ if __name__ == "__main__":
 	print('Resolution(s): ')
 	for res, variants in resolutions.items():
 		for variant in list(variants):
-			if variant[3]:
-				print(res+' '+str(round(eval(variant[0]),3))+'fps '+str(variant[1])+'s '+str(variant[2])+' variant(s) with a second audio track')
+			if variant[4]:
+				print(res+' '+str(round(eval(variant[0]),3))+'fps '+str(variant[1])+'s '+str(variant[3])+' variant(s) with a second audio track')
 			else:
-				print(res+' '+str(round(eval(variant[0]),3))+'fps '+str(variant[1])+'s '+str(variant[2])+' variant(s)')
+				print(res+' '+str(round(eval(variant[0]),3))+'fps '+str(variant[1])+'s '+str(variant[3])+' variant(s)')
 	print()
 
 	# Basic method of differentiating the input filenames (that include filename extensions) from the corresponding output prefixes
@@ -197,15 +181,13 @@ if __name__ == "__main__":
 	print()
 	print("Generating annotated mezzanine streams:")
 
-
-	# For each of the input source files, generate all resolution-duration-label combinations based on the source fps
+	# For each of the input source files, generate all the combinations defined in the resolutions parameter
 	for i,input in enumerate(inputs):
-		# Get the input source file video properties using ffprobe, as the fps and duration are needed
+		# Get the input source file video properties using ffprobe, as the duration is needed
 		source_videoproperties = subprocess.check_output(['ffprobe', '-i', input, '-show_streams', '-select_streams', 'v', '-loglevel', '0', '-print_format', 'json'])
 		source_videoproperties_json = json.loads(source_videoproperties)
 		if 'streams'in source_videoproperties_json:
 			# Get the source duration 
 			source_duration = int(eval(source_videoproperties_json['streams'][0]['duration']))
-			
-			# Generate all resolution-duration-label combinations for this input source file, at the selected framerate (based on the source file framerate)
-			generate_streams(input, source_duration, mezzanine_gen_script, font, first_label, qr_positions, resolutions, seek, start_end_indicators, window_len, outputs[i], second_audio_gen_script, test)
+			# Generate all combinations for this input source file
+			generate_streams(input, source_duration, mezzanine_gen_script, font, qr_positions, resolutions, seek, start_end_indicators, window_len, outputs[i], second_audio_gen_script, test)
