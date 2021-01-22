@@ -66,6 +66,11 @@ The output file naming convention is as follows:
 
 Usage example: `add_second_audio_track.py tos_A1_480x270@30_60.mp4` creates `tos_A1_480x270@30_60_2ndAudio[English].mp4`
 
+Additional requirements:
+* [pydub >=0.24.1][pydub]
+* [pyttsx3 >=2.90][pyttsx3]
+
+[pydub]: https://github.com/jiaaro/pydub/
 [pyttsx3]: https://github.com/nateshmbhat/pyttsx3
 
 
@@ -79,9 +84,9 @@ You must provide a source file and an output file prefix: `py metamezz.py source
 Output filenames have the following template: `<prefix>_<label>_<WxH>@<fps>_<duration-in-seconds>.mp4`  
 For example: `croatia_O2_3840x2160@50_60.mp4`  
 
-To generate a set of [WAVE mezzanine content](https://dash-large-files.akamaized.net/WAVE/Mezzanine/) for 29.97/30/59.94/60Hz you can execute the following:
+To generate a set of [WAVE mezzanine content](https://dash-large-files.akamaized.net/WAVE/Mezzanine/) you can execute the following:
 
-`py metamezz.py source/tearsofsteel_4k.mov mezzanine/tos -rjf resolutions_30_60.json`
+`py metamezz.py source/tearsofsteel_4k.mov mezzanine/tos source/DVB_PQ10_VandV.mov mezzanine/croatia -rjf resolutions_30_60.json resolutions_25_50.json --tonemap disabled enabled`
 
 This assumes the source file is in the `source` folder and generates the annotated mezzanine files in the `mezzanine` folder with the prefix `tos`.
 
@@ -93,7 +98,7 @@ Parameters:
 	- The label to use for each combination of resolution+framerate+duration.
 	- The number of variants to create for each combination of resolution+framerate+duration.
 	- Whether to add a second audio track to the streams created for a resolution+framerate+duration combination. 
-- `-fl <char>` that defines the character to use for the label of first resolution in the list (e.g. 'A').
+- `--tonemap [<enabled||disabled>, ...]` enables or disables rudimentary tonemapping to BT.709 SDR for each input file, to create SDR mezzanine streams using an HDR source. Provide one value and it will apply to all input source files. Alternatively, provide one value per input source file, separated by a space.
 - `--test 1` is a flag indicating a test run, which will parse the parameters and list the streams to generate, but won't actually generate the streams.
 
 Labels are used to identify the annotated mezzanine streams. They are displayed in the video, encoded in the QR codes displayed in the video, and included in the output filename. In the `metamezz.py` script, each label is composed of a character and a number. 
