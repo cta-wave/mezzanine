@@ -59,7 +59,7 @@ def genFlashSequence(flashCentreTimesSecs, idealFlashDurationSecs, sequenceDurat
 
     flashStartEndSamples = genSequenceStartEnds(flashCentreTimesSecs, flashDurationSamples, 1.0, frameRate)
 
-    nSamples = sequenceDurationSecs * frameRate
+    nSamples = math.ceil(sequenceDurationSecs * frameRate)
 
     def gapGen():
         while True:

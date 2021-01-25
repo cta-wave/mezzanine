@@ -67,11 +67,17 @@ import re
 
 # values are +0.5 so that the centre of the pulse is in the middle of the frame's duration
 fpsBitTimings = {
+    12.5:{ 0 : [ 3.5/12.5  ],
+           1 : [ 3.5/12.5, 9.5/12.5 ]
+         },    
     25 : { 0 : [ 3.5/25  ],
            1 : [ 3.5/25, 9.5/25 ]
          },
     50 : { 0 : [ 3.5/25  ],
            1 : [ 3.5/25, 9.5/25 ]
+         },
+    15 : { 0 : [ 3.5/15 ],
+           1 : [ 3.5/15, 9.5/15 ]
          },
     30 : { 0 : [ 3.5/30 ],
            1 : [ 3.5/30, 9.5/30 ]
@@ -180,7 +186,7 @@ if __name__ == "__main__":
 
     parser.add_argument(
         "--fps", dest="FPS", action="store", nargs=1,
-        type=int,
+        type=float,
         choices=sorted(fpsBitTimings.keys()),
         default=[FPS],
         help="Frame rate measured in frames per second. Default is "+str(FPS))
@@ -317,7 +323,7 @@ if __name__ == "__main__":
 
     print()
     print("Generating sequence with following parameters:")
-    print("   %s rate:                 %d fps" % (frameLabel.title(), fps))
+    print("   %s rate:                 %.1f fps" % (frameLabel.title(), fps))
     print("   Pattern window length:      %d seconds (meaning pattern will repeat every %d seconds)" % (seqBitLen, (2**seqBitLen-1)))
     print("   Sequence duration:          %d seconds (%d frames)" % (sequenceDurationSecs, sequenceDurationSecs*fps))
     print("   Video frame dimensions:     %d x %d pixels" % pixelsSize)

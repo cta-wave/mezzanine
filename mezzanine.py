@@ -38,7 +38,7 @@ label = 'mezz'
 output_video_encoding_cl = H265		# Defined based on original source content colorspace, default H.265/HEVC
 output_video_encoding_selection = {'bt2020nc':H265,'bt709':H264} # Mapping between source content colorspace and output video codec
 qr_file_dir = Path('qr/')			# Not configurable via argument
-qr_positions = 2
+qr_positions = 4
 resolution= '1920x1080'
 seek = '00:00:00.000'
 start_end_indicators = 'disabled'
@@ -49,6 +49,8 @@ start_indicator_frame_offset = 0	# Defined based on start_end_indicators, see be
 start_indicator_color = '0x006400'	# Not configurable via argument, color in hexadecimal 0xRRGGBB sequence
 end_indicator_color = '0x8B0000'	# Not configurable via argument, color in hexadecimal 0xRRGGBB sequence
 test_sequence_gen_script = Path('test_sequence_gen/src/generate.py') # Not configurable via argument
+tonemap = 'disabled'
+tonemap_cl = 'zscale=transfer=linear,tonemap=hable:desat=0,zscale=transfer=bt709,'	# Rudimentary tone mapping to BT.709 SDR
 width=''  # Pulled from resolution string, see below
 height='' # Pulled from resolution string, see below
 
@@ -111,6 +113,12 @@ parser.add_argument(
 	help="The font to utilize for drawing timecodes on frames, must be full path to file. Default: "+font)
 
 parser.add_argument(
+	'--tonemap', 
+	required=False, 
+	choices=['enabled','disabled','start','end'], 
+	help="Enables rudimentary tone mapping of BT.2020nc HDR content to BT.709 SDR. Forces output in H.264/AVC. May be \"enabled\" or \"disabled\". Default: disabled")
+
+parser.add_argument(
 	'-w', '--window-len', 
 	required=False, 
 	help="Unique pattern window length (in seconds). Beep/flash sequence will repeat after 2^n -1 seconds. Default is "+avsync_pattern_window_len+", meaning the sequence repeats after "+str(2**int(avsync_pattern_window_len)-1)+" seconds.")
@@ -155,44 +163,74 @@ if args.seek is not None:
 if args.start_end_indicators is not None:
 	start_end_indicators = args.start_end_indicators
 
+if args.tonemap is not None :
+	tonemap = args.tonemap
+
 
 # Check that source and boundaries files are present
-if not os.path.isfile(args.input):
-	sys.exit("Source file \""+args.input+"\" does not exist.")
+input = Path(args.input)
+if not os.path.isfile(input):
+	sys.exit("Source file \""+str(input)+"\" does not exist.")
 	
 if not os.path.isfile(boundaries):
 	sys.exit("Boundaries image file \""+boundaries+"\" does not exist.")
-
 	
+	
+# Create output file directory if it does not exist
+output = Path(args.output)
+if not os.path.isdir(output.parent):
+	try:
+		Path.mkdir(output.parent, parents=True)
+	except OSError:
+		print ("Failed to create the directory for output mezzanine stream.")
+
+
 # Set output video encoding parameters based on the following properties of the original source video:
 # color range, color space, pixel format, primaries and transfer function
-source_videoproperties = subprocess.check_output(['ffprobe', '-i', args.input, '-show_streams', '-select_streams', 'v', '-loglevel', '0', '-print_format', 'json'])
+source_videoproperties = subprocess.check_output(['ffprobe', '-i', str(input), '-show_streams', '-select_streams', 'v', '-loglevel', '0', '-print_format', 'json'])
 source_videoproperties_json = json.loads(source_videoproperties)
 if 'streams'in source_videoproperties_json:
-	if 'color_space' in source_videoproperties_json['streams'][0]:
+	if 'color_space' in source_videoproperties_json['streams'][0] and tonemap == 'disabled':
 		output_video_encoding_cl = output_video_encoding_selection.get(source_videoproperties_json['streams'][0]['color_space'],H265)
 		output_video_encoding_cl.append('-colorspace')
 		output_video_encoding_cl.append(source_videoproperties_json['streams'][0]['color_space'])
 	else:
+		# Either source is assumed to be BT.709 SDR in the absence of signalling or tonemapping to BT.709 SDR
 		output_video_encoding_cl = H264
-	if 'pix_fmt' in source_videoproperties_json['streams'][0]:
+	if 'pix_fmt' in source_videoproperties_json['streams'][0] and tonemap == 'disabled':
 		output_video_encoding_cl.append('-pix_fmt')
 		output_video_encoding_cl.append(source_videoproperties_json['streams'][0]['pix_fmt'])
-	if 'color_primaries' in source_videoproperties_json['streams'][0]:
+	if 'color_primaries' in source_videoproperties_json['streams'][0] and tonemap == 'disabled':
 		output_video_encoding_cl.append('-color_primaries')
 		output_video_encoding_cl.append(source_videoproperties_json['streams'][0]['color_primaries'])
 	if 'color_range' in source_videoproperties_json['streams'][0]:
 		output_video_encoding_cl.append('-color_range')
 		output_video_encoding_cl.append(source_videoproperties_json['streams'][0]['color_range'])
-	if 'color_transfer' in source_videoproperties_json['streams'][0]:
+	if 'color_transfer' in source_videoproperties_json['streams'][0] and tonemap == 'disabled':
 		output_video_encoding_cl.append('-color_trc')
 		output_video_encoding_cl.append(source_videoproperties_json['streams'][0]['color_transfer'])
+	if tonemap == 'enabled':
+		# Set BT.709 SDR parameters
+		output_video_encoding_cl.append('-colorspace')
+		output_video_encoding_cl.append('bt709')
+		output_video_encoding_cl.append('-pix_fmt')
+		output_video_encoding_cl.append('yuv420p')
+		output_video_encoding_cl.append('-color_primaries')
+		output_video_encoding_cl.append('bt709')
+		output_video_encoding_cl.append('-color_trc')
+		output_video_encoding_cl.append('bt709')
+	else:
+		# Disable tonemapping or leave enabled
+		tonemap_cl = ''
+
+
+# Display output video encoding parameters
 output_video_encoding = ' '.join(output_video_encoding_cl)
 print("Output video encoding parameters: "+output_video_encoding)
 
 
 # Align A/V sync beep audio sameple rate with the samplerate of the source file audio
-source_audioproperties = subprocess.check_output(['ffprobe', '-i', args.input, '-show_streams', '-select_streams', 'a', '-loglevel', '0', '-print_format', 'json'])
+source_audioproperties = subprocess.check_output(['ffprobe', '-i', str(input), '-show_streams', '-select_streams', 'a', '-loglevel', '0', '-print_format', 'json'])
 source_audioproperties_json = json.loads(source_audioproperties)
 if 'streams'in source_audioproperties_json:
 	if 'sample_rate' in source_audioproperties_json['streams'][0]:
@@ -233,7 +271,7 @@ elif start_end_indicators == 'end':
 											n=2:v=1:a=1\
 									[vout][aout]'
 
-	
+
 # Compute the size of various overlay blocks so they are consistently placed
 qr_size = int(round(int(height)*0.25,0))
 flash_block_size = int(round(int(height)*0.125,0))
@@ -244,6 +282,7 @@ flash_block_size = int(round(int(height)*0.125,0))
 frame_duration = round(1/eval(framerate),10)
 frame_count = int(round(eval(framerate)*duration,0))
 frame_pts = float(round(start_indicator_frame_offset*frame_duration,10))
+frame_rate = round(eval(framerate),3)
 
 print("Generating QR codes...", end='', flush=True)
 
@@ -257,7 +296,6 @@ for i in range(0,frame_count):
 	timecode = '{:02d}:{:02d}:{:06.3f}'.format(int(frame_pts/3600), int(frame_pts/60), frame_pts%60)
 	padded_frame = str(i+start_indicator_frame_offset).zfill(frame_number_padding)
 	
-	
 	qr_filename = qr_file_dir / (str(i).zfill(5)+'.png')
 	qr = qrcode.QRCode(
 		version=None,
@@ -265,7 +303,7 @@ for i in range(0,frame_count):
 		box_size=6,
 		border=4,
 		)
-	qr.add_data(label+';'+timecode+';'+padded_frame)
+	qr.add_data(label+';'+timecode+';'+padded_frame+';'+str(frame_rate))
 	qr.make(fit=True)
 	
 	qr_img = qr.make_image(fill_color='white', back_color='black')
@@ -288,7 +326,7 @@ if not os.path.isdir(flash_file_dir):
 
 subprocess.run(['python', test_sequence_gen_script, 
 	'--duration', str(duration),
-	'--fps', str(math.ceil(eval(framerate))), 
+	'--fps', str(math.ceil(eval(framerate)*2)/2), 
 	'--frame-filename', flash_file_dir / '%05d.png',
 	'--sampleRate', beep_audio_samplerate,
 	'--size', '1x1', 
@@ -306,6 +344,7 @@ subprocess.run(['python', test_sequence_gen_script,
 #   [5],[6],[7],[8] Are single colored frames with silent audio, used to signal the start and end of the stream
 # - Applies the following complex filter to the demuxed inputs:
 #     - Takes the video stream from the original source and:
+#       - Applies rudimentary tone mapping from HDR to SDR when --tonemap 1
 #       - Scales it to the desired output size while preserving original ratio
 #       - Adds top/bottom black bars to enforce a 16:9 frame
 #       - Fixes the output format to yuv420p
@@ -340,13 +379,14 @@ subprocess.run(['python', test_sequence_gen_script,
 #     - Written to the supplied output location (overwriting is enabled)
 subprocess.call(['ffmpeg', 
 	'-t', str(duration), '-i', beep_file,
-	'-ss', seek, '-t', str(duration), '-i', args.input,
+	'-ss', seek, '-t', str(duration), '-i', str(input),
 	'-i', boundaries,
 	'-framerate', framerate, '-thread_queue_size', '1024', '-start_number', '0', '-i', qr_file_dir / '%05d.png',
 	'-framerate', framerate, '-thread_queue_size', '1024', '-start_number', '0', '-i', flash_file_dir / '%05d.png']
 	+ start_end_indicators_cl
 	+['-filter_complex',	
 		'[1:v]\
+			'+tonemap_cl+'\
 			scale=\
 				size='+width+'x'+height+':\
 				force_original_aspect_ratio=decrease,\
@@ -372,7 +412,8 @@ subprocess.call(['ffmpeg',
 				fontfile='+font+':\
 				text=\'%{pts\:hms\:'
 					+str((lambda x: x/eval(framerate) if x > 0 else 0)(start_indicator_frame_offset))
-					+'};%{eif\:n+'+str(start_indicator_frame_offset)+'\:d\:'+str(frame_number_padding)+'}\':\
+					+'};%{eif\:n+'+str(start_indicator_frame_offset)+'\:d\:'+str(frame_number_padding)
+					+'};'+str(frame_rate)+'\':\
 				x=(w-tw)/2:\
 				y=h-(4*lh):\
 				fontcolor=white:\
@@ -419,7 +460,7 @@ subprocess.call(['ffmpeg',
 	+['-c:a', 'aac', '-b:a', '320k', '-ac', '2',
 	'-r', framerate,
 	'-y',
-	args.output])
+	str(output)])
 
 
 # Remove the temporaray files for the QR codes, flashes and beeps
