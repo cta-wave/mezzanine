@@ -19,8 +19,8 @@ Requirements:
 * [Python 3][python]
 * [Pillow >=3.4][pillow]
 * [qrcode >=6.1][qrcode]
-* [ffmpeg 4.3.1][ffmpeg]
-* [ffprobe 4.3.1][ffmpeg]
+* [ffmpeg][ffmpeg] (use a recent build from the master branch)
+* [ffprobe][ffmpeg] (use a recent build from the master branch)
 
 Using the provided `requirements.txt`, execute the following to install the Python dependancies:
 `pip install -r requirements.txt`
