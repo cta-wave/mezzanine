@@ -36,11 +36,11 @@ def generate_streams(input, source_duration, mezzanine_gen_script, font, qr_posi
 				if tonemap == 'enabled':
 					print('[->BT.709 SDR] ', end="")
 				if add_second_audio_track:
-					print(output+'_'+label_str+'_'+res+'@'+str(round(eval(fps),3))+'_'+str(duration)+'_2ndAudio[English].mp4')
+					print(str(output)+'_'+label_str+'_'+res+'@'+str(round(eval(fps),3))+'_'+str(duration)+'_2ndAudio[English].mp4')
 				else:
-					print(output+'_'+label_str+'_'+res+'@'+str(round(eval(fps),3))+'_'+str(duration)+'.mp4')
+					print(str(output)+'_'+label_str+'_'+res+'@'+str(round(eval(fps),3))+'_'+str(duration)+'.mp4')
 				if not test:
-					if not add_second_audio_track or (add_second_audio_track and not os.path.isfile(output+'_'+label_str+'_'+res+'@'+str(round(eval(fps),3))+'_'+str(duration)+'.mp4')):
+					if not add_second_audio_track or (add_second_audio_track and not os.path.isfile(str(output)+'_'+label_str+'_'+res+'@'+str(round(eval(fps),3))+'_'+str(duration)+'.mp4')):
 						subprocess.run(['python', mezzanine_gen_script, 
 									'--duration', str(duration),
 									'--framerate', fps,
@@ -52,12 +52,12 @@ def generate_streams(input, source_duration, mezzanine_gen_script, font, qr_posi
 									'--font', font,
 									'--window-len', str(window_len),
 									'--tonemap', str(tonemap),
-									input,
-									output+'_'+label_str+'_'+res+'@'+str(round(eval(fps),3))+'_'+str(duration)+'.mp4'
+									str(input),
+									str(output)+'_'+label_str+'_'+res+'@'+str(round(eval(fps),3))+'_'+str(duration)+'.mp4'
 									])		
 					if add_second_audio_track:
 						subprocess.run(['python', second_audio_gen_script, 
-								output+'_'+label_str+'_'+res+'@'+str(round(eval(fps),3))+'_'+str(duration)+'.mp4'
+								str(output)+'_'+label_str+'_'+res+'@'+str(round(eval(fps),3))+'_'+str(duration)+'.mp4'
 								])
 
 
@@ -104,7 +104,7 @@ if __name__ == "__main__":
 	
 	# Parameters for mezzanine.py not configurable via argument
 	mezzanine_gen_script = Path('mezzanine.py')
-	font = 'Cousine-Regular.ttf'
+	font = Path('Cousine-Regular.ttf')
 	qr_positions = 4
 	seek = '00:01:25'
 	start_end_indicators = 'enabled'
@@ -162,15 +162,17 @@ if __name__ == "__main__":
 			if len(args.resolutions_json) > 1:
 				resolutions = []
 				for json_file in args.resolutions_json:
-					resolutions_json_file = open(json_file)
-					print("Successfully opened JSON resolutions file "+json_file)
+					json_file_path = Path(json_file)
+					resolutions_json_file = open(json_file_path)
+					print("Successfully opened JSON resolutions file "+str(json_file_path))
 					resolutions.append(json.load(resolutions_json_file))
-					print("Successfully parsed JSON resolutions file "+json_file)
+					print("Successfully parsed JSON resolutions file "+str(json_file_path))
 			else:
-				resolutions_json_file = open(args.resolutions_json[0])
-				print("Successfully opened JSON resolutions file "+args.resolutions_json[0])
+				json_file_path = Path(args.resolutions_json[0])
+				resolutions_json_file = open(json_file_path)
+				print("Successfully opened JSON resolutions file "+str(json_file_path))
 				resolutions = json.load(resolutions_json_file)
-				print("Successfully parsed JSON resolutions file "+args.resolutions_json[0])
+				print("Successfully parsed JSON resolutions file "+str(json_file_path))
 		except:
 			print("Failed to parse JSON resolutions file. Ensure the file contains valid JSON. Check the path to the JSON file is correct.")
 			sys.exit("Mezzanine creation aborted.")
@@ -188,10 +190,10 @@ if __name__ == "__main__":
 	# Basic method of differentiating the input filenames (that include filename extensions) from the corresponding output prefixes
 	for io in args.ios:
 		if io[-4:][0] == '.':
-			inputs.append(io)
+			inputs.append(Path(io))
 			print('+ Input: '+io)
 		else:
-			outputs.append(io)
+			outputs.append(Path(io))
 			print('+ Output: '+io+'_label_WxH@fps_duration-in-seconds.mp4')
 		
 	total_streams = 0
@@ -199,12 +201,14 @@ if __name__ == "__main__":
 	print('Resolution(s): ')
 	if isinstance(resolutions,list) and len(inputs) > 1:
 		for i,input in enumerate(inputs):
-			print('+ Using source: '+input, end ="")
+			print('+ Using source: '+str(input), end ="")
 			if i == 0 and tonemap[0] == 'enabled':
 				print(' tonemapped to BT.709 SDR')
 			elif i > 0 and len(tonemap) > 1:
 				if tonemap[i] == 'enabled':
 					print(' [tonemapped to BT.709 SDR]')
+				else:
+					print()
 			else:
 				print()
 			for res, variants in resolutions[i].items():
@@ -244,7 +248,7 @@ if __name__ == "__main__":
 	# For each of the input source files, generate all the combinations defined in the resolutions parameter
 	for i,input in enumerate(inputs):
 		# Get the input source file video properties using ffprobe, as the duration is needed
-		source_videoproperties = subprocess.check_output(['ffprobe', '-i', input, '-show_streams', '-select_streams', 'v', '-loglevel', '0', '-print_format', 'json'])
+		source_videoproperties = subprocess.check_output(['ffprobe', '-i', str(input), '-show_streams', '-select_streams', 'v', '-loglevel', '0', '-print_format', 'json'])
 		source_videoproperties_json = json.loads(source_videoproperties)
 		if 'streams'in source_videoproperties_json:
 			# Get the source duration 

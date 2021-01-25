@@ -168,8 +168,9 @@ if args.tonemap is not None :
 
 
 # Check that source and boundaries files are present
-if not os.path.isfile(args.input):
-	sys.exit("Source file \""+args.input+"\" does not exist.")
+input = Path(args.input)
+if not os.path.isfile(input):
+	sys.exit("Source file \""+str(input)+"\" does not exist.")
 	
 if not os.path.isfile(boundaries):
 	sys.exit("Boundaries image file \""+boundaries+"\" does not exist.")
@@ -186,7 +187,7 @@ if not os.path.isdir(output.parent):
 
 # Set output video encoding parameters based on the following properties of the original source video:
 # color range, color space, pixel format, primaries and transfer function
-source_videoproperties = subprocess.check_output(['ffprobe', '-i', args.input, '-show_streams', '-select_streams', 'v', '-loglevel', '0', '-print_format', 'json'])
+source_videoproperties = subprocess.check_output(['ffprobe', '-i', str(input), '-show_streams', '-select_streams', 'v', '-loglevel', '0', '-print_format', 'json'])
 source_videoproperties_json = json.loads(source_videoproperties)
 if 'streams'in source_videoproperties_json:
 	if 'color_space' in source_videoproperties_json['streams'][0] and tonemap == 'disabled':
@@ -229,7 +230,7 @@ print("Output video encoding parameters: "+output_video_encoding)
 
 
 # Align A/V sync beep audio sameple rate with the samplerate of the source file audio
-source_audioproperties = subprocess.check_output(['ffprobe', '-i', args.input, '-show_streams', '-select_streams', 'a', '-loglevel', '0', '-print_format', 'json'])
+source_audioproperties = subprocess.check_output(['ffprobe', '-i', str(input), '-show_streams', '-select_streams', 'a', '-loglevel', '0', '-print_format', 'json'])
 source_audioproperties_json = json.loads(source_audioproperties)
 if 'streams'in source_audioproperties_json:
 	if 'sample_rate' in source_audioproperties_json['streams'][0]:
@@ -325,7 +326,7 @@ if not os.path.isdir(flash_file_dir):
 
 subprocess.run(['python', test_sequence_gen_script, 
 	'--duration', str(duration),
-	'--fps', str(math.ceil(eval(framerate))), 
+	'--fps', str(math.ceil(eval(framerate)*2)/2), 
 	'--frame-filename', flash_file_dir / '%05d.png',
 	'--sampleRate', beep_audio_samplerate,
 	'--size', '1x1', 
@@ -378,7 +379,7 @@ subprocess.run(['python', test_sequence_gen_script,
 #     - Written to the supplied output location (overwriting is enabled)
 subprocess.call(['ffmpeg', 
 	'-t', str(duration), '-i', beep_file,
-	'-ss', seek, '-t', str(duration), '-i', args.input,
+	'-ss', seek, '-t', str(duration), '-i', str(input),
 	'-i', boundaries,
 	'-framerate', framerate, '-thread_queue_size', '1024', '-start_number', '0', '-i', qr_file_dir / '%05d.png',
 	'-framerate', framerate, '-thread_queue_size', '1024', '-start_number', '0', '-i', flash_file_dir / '%05d.png']
