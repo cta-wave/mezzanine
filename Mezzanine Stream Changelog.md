@@ -4,7 +4,7 @@ Version 1 (2021-XX-XX)
 - Mezzanine for 12.5/25/50 fps created using [EBU Croatia footage (croatia)](https://dash-large-files.akamaized.net/WAVE/Original/DVB_PQ10_VandV.mov)
 - Resolutions from 480x270 (label A) to 3160x2160 (label O), as required for the [WAVE test content](https://docs.google.com/spreadsheets/d/1hxbqBdJEEdVIDEkpjZ8f5kvbat_9VGxwFP77AXA_0Ao/)
 - These mezzanine streams contain BT.709 SDR content, encoded in AVC (`libx264 -preset slower -crf 5`)
-- New files:
+- New files (96):
 	- croatia_A1_480x270@12.5_60.mp4
 	- croatia_A1_480x270@25_60.mp4
 	- croatia_A1_480x270@50_60.mp4
