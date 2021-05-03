@@ -1,10 +1,11 @@
 # CTA WAVE Mezzanine Changelog
-Version 1 (2021-XX-XX) - Proposed for review (2021-04-13)
+Version 1 (review started on 2021-04-13, approved on 2021-04-27)
+- Mezzanine content located here (excluding sub-folders): https://dash-large-files.akamaized.net/WAVE/Mezzanine/
 - Mezzanine for 15/30/60 fps and fractional rates 14.985/29.97/59.94 fps created using [Tears of Steel (tos)](https://dash-large-files.akamaized.net/WAVE/Original/tearsofsteel_4k.mov)
 - Mezzanine for 12.5/25/50 fps created using [EBU Croatia footage (croatia)](https://dash-large-files.akamaized.net/WAVE/Original/DVB_PQ10_VandV.mov)
 - Resolutions from 480x270 (label A) to 3160x2160 (label O), as required for the [WAVE test content](https://docs.google.com/spreadsheets/d/1hxbqBdJEEdVIDEkpjZ8f5kvbat_9VGxwFP77AXA_0Ao/)
 - These mezzanine streams contain BT.709 SDR content, encoded in AVC (`libx264 -preset slower -crf 5`)
-- New files (96):
+- New files (96): 
 	- croatia_A1_480x270@12.5_60.mp4
 	- croatia_A1_480x270@25_60.mp4
 	- croatia_A1_480x270@50_60.mp4
