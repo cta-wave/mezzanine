@@ -1,3 +1,10 @@
+# About this Repo
+
+This repo holds code and associated elements for automatically generating annotated WAVE mezzanine content from raw source material.  The annotations in the resulting 
+multimedia files are used by the WAVE test suite to programmatically identify content parameters and to verify various elements of performance.  The WAVE Project is an 
+industry interoperability effort for streaming internet video supported by over 60 companies and hosted by the Consumer Technology Association.  For more information on 
+the WAVE Project, the WAVE test suite, please see [CTA.tech/WAVE](https://CTA.tech/WAVE) or email standards@CTA.tech.”
+
 # Creating WAVE mezzanine content using a Python script
 
 The steps to create WAVE mezzanine content have been combined into a single Python script `mezzanine.py`. 
