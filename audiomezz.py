@@ -18,8 +18,8 @@ Generate an audio stream containing random noise that is band limited to 7 kHz
 """
 
 # Default parameters
-channels = 2
-max_channels = 2
+max_channels = 2	# Maximum number of channels with audio content (additional channels will contain digital silence)
+channels = 2		# Create a stereo audio stream by default
 duration = 60		# [s]
 samplerate = 48000	# [Hz]
 bw = 7000			# [Hz]
@@ -35,7 +35,8 @@ parser.add_argument(
 	
 parser.add_argument(
 	'-f', '--samplerate', 
-	required=False, 
+	required=False,
+	type=int,
 	help="The sample rate, in Hz, of the audio file generated. Default: "+str(samplerate))
 	
 parser.add_argument(
