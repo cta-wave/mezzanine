@@ -476,9 +476,8 @@ if __name__ == "__main__":
             "approxFlashDurationSecs" : idealFlashDurationSecs,
         }
 
-        jsonString = json.dumps(metadata)
-        f=open(metadataFilename, "wb")
-        f.write(jsonString)
+        f=open(metadataFilename, "w")
+        json.dump(metadata,f)
         f.close()
     else:
         print("NOT generating metadata file (no filename provided)")
