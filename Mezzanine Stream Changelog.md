@@ -1,4 +1,137 @@
 # CTA WAVE Mezzanine Changelog
+Version 2 (review started on 2021-08-09, approved on 2021-08-31)
+- Mezzanine content reorganised into new folder structure:
+  - New releases are located in folders named after the release version here: https://dash.akamaized.net/WAVE/Mezzanine/releases/
+  - New mezzanine content under review is located in folders named after the upload date (YYYY-MM-DD) here: https://dash.akamaized.net/WAVE/Mezzanine/under_review/
+  - Mezzanine content to be deleted is located in folders named after the upload date (YYYY-MM-DD) here: https://dash.akamaized.net/WAVE/Mezzanine/to_be_deleted/
+- This mezzanine release will be moved here after approval: https://dash.akamaized.net/WAVE/Mezzanine/releases/2/
+- Sources:
+  - Mezzanine for 15/30/60 fps and fractional rates 14.985/29.97/59.94 fps created using [Tears of Steel (tos)](https://dash-large-files.akamaized.net/WAVE/Original/tearsofsteel_4k.mov)
+  - Mezzanine for 12.5/25/50 fps created using [EBU Croatia footage (croatia)](https://dash-large-files.akamaized.net/WAVE/Original/DVB_PQ10_VandV.mov)
+  - Mezzanine for splice "ad" 30 fps and fractional rate 29.97 fps created using [Big Buck Bunny (bbb)](https://dash-large-files.akamaized.net/WAVE/Original/bigbuckbunny_trailer_1080p30.mp4)
+  - Mezzanine for splice "ad" 25 fps created using [Big Buck Bunny (bbb)](https://dash-large-files.akamaized.net/WAVE/Original/bigbuckbunny_trailer_1080p.mov)
+- Resolutions from 480x270 (label A) to 3160x2160 (label O), as required for the [WAVE test content](https://docs.google.com/spreadsheets/d/1hxbqBdJEEdVIDEkpjZ8f5kvbat_9VGxwFP77AXA_0Ao/)
+- Mezzanine for splice tests is prefixed with "splice_" ("splice_main_" and "splice_ad_").
+- These mezzanine streams contain BT.709 SDR content, encoded in AVC (`libx264 -preset slower -crf 5`)
+- Notable changes:
+  - Metadata for each mezzanine stream, including video properties and license, now saved to JSON files named as follows: <mezzanine_filename>.json
+  - A/V sync metadata is saved to JSON files named as follows: <mezzanine_filename>_avsync.json
+  - Annotations now added to green start frame and red end frame, starting from frame 1 (not frame 0).
+  - Stream duration is now exactly 60 seconds (instead of 60 seconds + 2 frames in the previous version).
+  - Black background added behind QR codes to help with detection.
+- Only updates of existing mezzanine streams, no additional streams and no removed streams.
+- New files (12):
+    - splice_ad_bbb_AD-A1_1280x720@25_5.76.mp4
+    - splice_ad_bbb_AD-A1_1280x720@29.97_21.255.mp4
+    - splice_ad_bbb_AD-A1_1280x720@30_6.4.mp4
+    - splice_ad_bbb_AD-B1_1920x1080@25_5.76.mp4
+    - splice_ad_bbb_AD-B1_1920x1080@29.97_21.255.mp4
+    - splice_ad_bbb_AD-B1_1920x1080@30_6.4.mp4
+    - splice_main_croatia_A1_1280x720@25_10.mp4
+    - splice_main_croatia_B1_1920x1080@25_10.mp4
+    - splice_main_tos_A1_1280x720@29.97_10.mp4
+    - splice_main_tos_A1_1280x720@30_10.mp4
+    - splice_main_tos_B1_1920x1080@29.97_10.mp4
+    - splice_main_tos_B1_1920x1080@30_10.mp4
+- Updated files (96):
+    - croatia_A1_480x270@12.5_60.mp4
+    - croatia_A1_480x270@25_60.mp4
+    - croatia_A1_480x270@50_60.mp4
+    - croatia_B1_512x288@25_60.mp4
+    - croatia_B1_512x288@50_60.mp4
+    - croatia_C1_640x360@25_60.mp4
+    - croatia_C1_640x360@50_60.mp4
+    - croatia_D1_704x396@25_60.mp4
+    - croatia_D1_704x396@50_60.mp4
+    - croatia_E1_720x404@25_60.mp4
+    - croatia_E1_720x404@50_60.mp4
+    - croatia_F1_768x432@25_60.mp4
+    - croatia_F1_768x432@50_60.mp4
+    - croatia_G1_852x480@25_60.mp4
+    - croatia_G1_852x480@50_60.mp4
+    - croatia_H1_960x540@25_60.mp4
+    - croatia_H1_960x540@50_60.mp4
+    - croatia_I1_1024x576@25_60.mp4
+    - croatia_I1_1024x576@50_60.mp4
+    - croatia_I2_1024x576@25_60.mp4
+    - croatia_I2_1024x576@50_60.mp4
+    - croatia_J1_1280x720@25_60.mp4
+    - croatia_J1_1280x720@50_60.mp4
+    - croatia_K1_1600x900@25_60.mp4
+    - croatia_K1_1600x900@50_60.mp4
+    - croatia_L1_1920x1080@25_60.mp4
+    - croatia_L1_1920x1080@50_60.mp4
+    - croatia_L2_1920x1080@25_60.mp4
+    - croatia_L2_1920x1080@50_60.mp4
+    - croatia_M1_2560x1440@50_60.mp4
+    - croatia_N1_3200x1800@50_60.mp4
+    - croatia_O1_3840x2160@50_60.mp4
+    - tos_A1_480x270@14.985_60.mp4
+    - tos_A1_480x270@15_60.mp4
+    - tos_A1_480x270@29.97_60.mp4
+    - tos_A1_480x270@30_60.mp4
+    - tos_A1_480x270@59.94_60.mp4
+    - tos_A1_480x270@60_60.mp4
+    - tos_B1_512x288@29.97_60.mp4
+    - tos_B1_512x288@30_60.mp4
+    - tos_B1_512x288@59.94_60.mp4
+    - tos_B1_512x288@60_60.mp4
+    - tos_C1_640x360@29.97_60.mp4
+    - tos_C1_640x360@30_60.mp4
+    - tos_C1_640x360@59.94_60.mp4
+    - tos_C1_640x360@60_60.mp4
+    - tos_D1_704x396@29.97_60.mp4
+    - tos_D1_704x396@30_60.mp4
+    - tos_D1_704x396@59.94_60.mp4
+    - tos_D1_704x396@60_60.mp4
+    - tos_E1_720x404@29.97_60.mp4
+    - tos_E1_720x404@30_60.mp4
+    - tos_E1_720x404@59.94_60.mp4
+    - tos_E1_720x404@60_60.mp4
+    - tos_F1_768x432@29.97_60.mp4
+    - tos_F1_768x432@30_60.mp4
+    - tos_F1_768x432@59.94_60.mp4
+    - tos_F1_768x432@60_60.mp4
+    - tos_G1_852x480@29.97_60.mp4
+    - tos_G1_852x480@30_60.mp4
+    - tos_G1_852x480@59.94_60.mp4
+    - tos_G1_852x480@60_60.mp4
+    - tos_H1_960x540@29.97_60.mp4
+    - tos_H1_960x540@30_60.mp4
+    - tos_H1_960x540@59.94_60.mp4
+    - tos_H1_960x540@60_60.mp4
+    - tos_I1_1024x576@29.97_60.mp4
+    - tos_I1_1024x576@30_60.mp4
+    - tos_I1_1024x576@59.94_60.mp4
+    - tos_I1_1024x576@60_60.mp4
+    - tos_I2_1024x576@29.97_60.mp4
+    - tos_I2_1024x576@30_60.mp4
+    - tos_I2_1024x576@59.94_60.mp4
+    - tos_I2_1024x576@60_60.mp4
+    - tos_J1_1280x720@29.97_60.mp4
+    - tos_J1_1280x720@30_60.mp4
+    - tos_J1_1280x720@59.94_60.mp4
+    - tos_J1_1280x720@60_60.mp4
+    - tos_K1_1600x900@29.97_60.mp4
+    - tos_K1_1600x900@30_60.mp4
+    - tos_K1_1600x900@59.94_60.mp4
+    - tos_K1_1600x900@60_60.mp4
+    - tos_L1_1920x1080@29.97_60.mp4
+    - tos_L1_1920x1080@30_60.mp4
+    - tos_L1_1920x1080@59.94_60.mp4
+    - tos_L1_1920x1080@60_60.mp4
+    - tos_L2_1920x1080@29.97_60.mp4
+    - tos_L2_1920x1080@30_60.mp4
+    - tos_L2_1920x1080@59.94_60.mp4
+    - tos_L2_1920x1080@60_60.mp4
+    - tos_M1_2560x1440@59.94_60.mp4
+    - tos_M1_2560x1440@60_60.mp4
+    - tos_N1_3200x1800@59.94_60.mp4
+    - tos_N1_3200x1800@60_60.mp4
+    - tos_O1_3840x2160@59.94_60.mp4
+    - tos_O1_3840x2160@60_60.mp4
+
+
 Version 1 (review started on 2021-04-13, approved on 2021-04-27)
 - Mezzanine content located here (excluding sub-folders): https://dash-large-files.akamaized.net/WAVE/Mezzanine/
 - Mezzanine for 15/30/60 fps and fractional rates 14.985/29.97/59.94 fps created using [Tears of Steel (tos)](https://dash-large-files.akamaized.net/WAVE/Original/tearsofsteel_4k.mov)

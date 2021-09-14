@@ -5,22 +5,55 @@ multimedia files are used by the WAVE test suite to programmatically identify co
 industry interoperability effort for streaming internet video supported by over 60 companies and hosted by the Consumer Technology Association.  For more information on 
 the WAVE Project, the WAVE test suite, please see [CTA.tech/WAVE](https://CTA.tech/WAVE) or email standards@CTA.tech.”
 
-# Creating WAVE mezzanine content using a Python script
 
-The steps to create WAVE mezzanine content have been combined into a single Python script `mezzanine.py`. 
+# Contents
 
-This script does the following to the source content:
+1. [Creating annotated WAVE mezzanine content](#creating-annotated-wave-mezzanine-content)
+2. [Generating all annotated WAVE mezzanine content](#generating-all-annotated-wave-mezzanine-content)
+3. [Experimental scripts](#experimental-scripts)
+
+
+# Creating annotated WAVE mezzanine content 
+
+The steps to create annotated WAVE mezzanine content have been combined into a single Python script `mezzanine.py`. 
+
+The `mezzanine.py` script does the following to the source content:
 - Adds timecode, frame number with configurable zero padding, frame rate, configurable label text and font:
 	- Displayed in video.
 	- Encoded in QR code displayed on each frame.
 	- Option to configure QR code to alternate between either 2 or 4 positions.
-- Adds configurable border indicators (default: `boundaries.png`).
-- Integrates an A/V sync pattern at the top right of the video using modified synchronisation timing video test sequence generator scripts from [DVB companion screen synchronisation timing accuracy measurement](https://www.github.com/BBC/dvbcss-synctiming) to generate a sequence of "beeps" and "flashes" with an irregular pattern that only repeats after a configurable duration (default 31 seconds). 
+- Adds a low density bit pattern for each frame that signals:
+	- Frame number.
+	- Total frames.
+	- Frame rate.
+	- Horizontal resolution.
+	- Vertical resolution.
+
+  Note: The QR code is intended for black-box testing of devices using a camera to capture the video output,
+  without requiring manufacturer involvement. The bit pattern is intended for white-box testing, where the video is
+  processed directly within a device.
+- Adds border indications:
+	- Red triangular indicators (`assets/boundaries.png`).
+	- 2 pixel wide border around the edge of the video (outer 1px white, inner 1px black).
+- Integrates an A/V sync pattern at the top right of the video 
+  using modified synchronisation timing video test sequence generator scripts 
+  from [DVB companion screen synchronisation timing accuracy measurement](https://www.github.com/BBC/dvbcss-synctiming). 
+  The pattern is an irregular sequence of "beeps" and "flashes" that only repeats after a configurable duration 
+  (default 31 seconds).
 - Mixes source content audio with A/V sync beeps to allow for visual lip-sync confirmation.
-- Includes option to add a dark green (`0x006400`) color frame to indicate the start of the video, and a dark red (`0x8B0000`) frame to indicate the end of the video.
-- Video output configured to minimise lossy nature of transcoding and preserve properties of source content. The codec used depends on source content color space:
+- Includes option to add a dark green (`0x006400`) color frame to indicate the start of the video, 
+  and a dark red (`0x8B0000`) frame to indicate the end of the video.
+- Optionally applies rudimentary tone-mapping to BT.709 SDR for each input file, 
+  to create SDR mezzanine streams using an HDR source.
+- Generates JSON metadata related to the mezzanine content, encoding, output file and source file. 
+  This includes the mezzanine release version, and the corresponding WAVE Test Content Format Specification version.
+- Video output configured to minimise lossy nature of transcoding and preserve properties of source content. 
+  The codec used depends on source content color space:
 	- H.264/AVC for BT.709 or undefined
 	- H.265/HEVC for BT.2020nc or other defined value
+  
+  Note: These codecs are used to ensure the properties of the content are signalled correctly. 
+  A more appropriate mezzanine video codec or raw YUV data may be used in future.
 
 Requirements:
 * [Python 3][python]
@@ -29,7 +62,7 @@ Requirements:
 * [ffmpeg][ffmpeg] (use a recent build from the master branch)
 * [ffprobe][ffmpeg] (use a recent build from the master branch)
 
-Using the provided `requirements.txt`, execute the following to install the Python dependancies:
+Using the provided `requirements.txt`, execute the following to install the Python dependencies:
 `pip install -r requirements.txt`
 
 Associated assets:
@@ -42,13 +75,11 @@ Tools:
 Mezzanine sources:
 * [WAVE original source files][waveorignial]
 
-For example, to generate an annotated mezzanine file you will need the following original files referenced above:
-- `tearsofsteel_4k.mov`
-- `boundaries.png`
-- `Cousine-Regular.ttf`
-
-You can then execute the following to produce the an annotated mezzanine output file:  
-`py mezzanine.py -s 00:00:07.250 -d 30 -f 30 -r 1280x720 -b boundaries.png -t Cousine-Regular.ttf -l A1 -q 4 --start-end-indicators enabled --window-len 6 tearsofsteel_4k.mov tos-30sec-example.mp4`
+For example, you can execute the following command to produce an annotated mezzanine file:  
+`py mezzanine.py --duration 60 --framerate 30 --label J1 --qr-positions 4 --resolution 1280x720 --seek 00:01:25 
+--start-end-indicators enabled --font assets/Cousine-Regular.ttf --window-len 6 --tonemap disabled 
+--version 2 --spec-version 1 --metadata-only disabled 
+source/tearsofsteel_4k.mov _mezzanine/tos_J1_1280x720@30_60.mp4`
 
 The full details of the available commands for the script can be found by executing `py mezzanine.py -h`
 
@@ -56,22 +87,153 @@ The full details of the available commands for the script can be found by execut
 [pillow]: https://pypi.org/project/Pillow/
 [qrcode]: https://pypi.org/project/qrcode/
 [cousine]: https://fonts.google.com/specimen/Cousine
-[ffmpeg]: https://ffmpeg.org
-[gimp]: https://gimp.org
+[ffmpeg]: https://ffmpeg.org/
+[gimp]: https://gimp.org/
 [waveorignial]: https://dash-large-files.akamaized.net/WAVE/Original/
 
 
-# Adding a second audio track to a mezzanine stream
-The `add_second_audio_track.py` Python script uses the [`pyttsx3`][pyttsx3] library to create an audio file with the spoken audio "English".
+# Generating all annotated WAVE mezzanine content
 
-This is mixed with the original audio of a mezzanine file, repeating the spoken audio every 15 seconds. 
+The `metamezz.py` Python script enables generation of multiple annotated mezzanine streams with a single command, 
+using `mezzanine.py` to generate each annotated mezzanine file. 
 
-A new copy of the original mezzanine stream is created, incorporating the new audio track as a second audio track. The first audio track remains the orignal mezzanine audio.
+The requirements for `metamezz.py` are the same as for `mezzanine.py`. 
+
+At least one source file and an output file prefix pair must be specified, for example:
+`py metamezz.py source1.mov source1_output_prefix`
+
+Additional parameters determine the specific annotated mezzanine files to generate (see further).
+
+WAVE annotated mezzanine filenames use the following template: 
+`<prefix>_<label>_<WxH>@<fps>_<duration>.mp4`
+
+Where:
+- `prefix` is a short string based on the source content used, e.g. "tos" for Tears of Steel.
+- `label` is a short string used to identify a particular piece of test content, e.g. "A1", "L1", "L2".
+- `W` and `H` are the horizontal and vertical resolutions in pixels.
+- `fps` is the frame rate.
+- `duration` is the duration of the annotated mezzanine content, in seconds.
+
+For example: `croatia_O2_3840x2160@50_60.mp4`  or `tos_L1_1920x1080@60_60.mp4`
+
+To generate a complete set of [WAVE mezzanine content](https://dash-large-files.akamaized.net/WAVE/Mezzanine/releases/) 
+you can execute the following 2 commands:
+
+`py metamezz.py 
+"source\tearsofsteel_4k.mov" _mezzanine\tos 
+"source\tearsofsteel_4k.mov" _mezzanine\tos 
+"source\DVB_PQ10_VandV.mov" _mezzanine\croatia 
+-rjf 
+rjf\resolutions_15_30_60_fractional.json 
+rjf\resolutions_15_30_60_non-fractional.json 
+rjf\resolutions_12.5_25_50.json 
+--tonemap disabled disabled enabled --spec-version 1 --version 2`
+
+`py metamezz.py 
+"source\tearsofsteel_4k.mov" _mezzanine\splice_main_tos 
+"source\tearsofsteel_4k.mov" _mezzanine\splice_main_tos 
+"source\DVB_PQ10_VandV.mov" _mezzanine\splice_main_croatia 
+"source\Big Buck Bunny trailer_1080p30.mp4" _mezzanine\splice_ad_bbb 
+"source\Big Buck Bunny trailer_1080p30.mp4" _mezzanine\splice_ad_bbb 
+"source\Big Buck Bunny trailer_1080p.mov" _mezzanine\splice_ad_bbb 
+-rjf 
+rjf\splice_main_resolutions_30_fractional.json 
+rjf\splice_main_resolutions_30_non-fractional.json 
+rjf\splice_main_resolutions_25.json 
+rjf\splice_ad_resolutions_30_fractional.json 
+rjf\splice_ad_resolutions_30_non-fractional.json 
+rjf\splice_ad_resolutions_25.json 
+--tonemap disabled disabled enabled disabled disabled disabled --spec-version 1 --version 2`
+
+This assumes the source files are located in the `source` folder, and the JSON files in the `rjf` folder.
+The annotated mezzanine files generated are saved to the `_mezzanine` folder,
+with the prefixes `tos` and `croatia` for the main mezzanine content, 
+and with the prefixes `splice_main_tos`, `splice_main_croatia` and `splice_ad_bbb` for the splicing mezzanine content.
+Tone-mapping is enabled for the croatia content, as the source is HDR, 
+but the desired output for the mezzanine content is SDR.
+The mezzanine release version is set to 2,
+and the corresponding WAVE Test Content Format Specification version is set to 1.
+
+The following set of JSON files is used to generate all WAVE annotated mezzanine content.
+These JSON files are passed to `metamezz.py` using the `-rjf` parameter.
+- Main annotated mezzanine content (60 second duration):
+	- resolutions_12.5_25_50.json -- 12.5/25/50 fps
+	- resolutions_15_30_60_fractional.json -- 14.985/29.97/59.94 fps
+	- resolutions_15_30_60_non-fractional.json -- 15/30/60 fps
+- Shorter main annotated mezzanine content for splicing tests (10 second duration):
+	- splice_main_resolutions_25.json -- 12.5/25/50 fps
+	- splice_main_resolutions_30_fractional.json -- 14.985/29.97/59.94 fps
+	- splice_main_resolutions_30_non-fractional.json -- 15/30/60 fps
+- "Ad" annotated mezzanine content for splicing tests (duration depends on frame rate):	
+	- splice_ad_resolutions_25.json -- 12.5/25/50 fps (5.76 second duration)
+	- splice_ad_resolutions_30_fractional.json -- 14.985/29.97/59.94 fps (21.255 second duration)
+	- splice_ad_resolutions_30_non-fractional.json -- 15/30/60 fps (6.4 second duration)
+
+The JSON structure used is: 
+`{ "WIDTHxHEIGHT" : 
+	[ [framerate (str), duration in seconds (float), starting position in source (str, HH:MM:SS), 
+		label (str), number of variants (int), add second audio track (bool)], 
+	[...] ]}`
+
+Multiple combinations of frame rate, duration, start position, label and variants (with/without second audio track) 
+can be defined for each resolution.  
+
+Details of the available commands for the script can be obtained by executing `py metamezz.py -h`
+
+Here is a brief description of the parameters:
+- `-m enabled || disabled` disables mezzanine generation and only (re)generates JSON metadata using existing mezzanine 
+   files. The source and output mezzanine files must both be present at the paths provided.
+- `-r <string_containing_JSON>` or `-rjf <path_to_JSON_file>` that provide JSON defining the following properties 
+  of the generated mezzanine content:
+	- Resolution (width x height).
+	- Frame rate (string, fractional rates must be specified as division operations, e.g. 30000/1001).
+	- Duration (in seconds).
+  	- Starting position in source content (string with timestamp using the HH:MM:SS notation).
+	- Label (one or more characters, e.g. 'A', 
+	  followed by a number, appended automatically for each variant starting from 1).
+	  Labels are used to identify the different annotated mezzanine streams. They are displayed in the video, 
+	  encoded in the QR codes displayed in the video, and included in the output filename. 
+	  The character(s) identify the particular combination of {resolution, frame rate, duration}. 
+	  The following number identifies the variant (see below). E.g. 'A1', ... 'ÁN', 'B1', ..., 'BN'.
+	- The number of variants to create for each combination of 
+	  {resolution, frame rate, duration, starting position, label}. 
+	  A variant is a duplicate of the same mezzanine content with a different label (same letter, different number).
+	  Specifying N variants for a combination with label 'A' would result in mezzanine streams with labels 'A1' to 'AN'.
+	- Flag (boolean) that determines whether to generate a second audio track for streams from a particular combination 
+	  of {resolution, frame rate, duration, starting position, label, number of variants}.
+- `--tonemap [enabled || disabled, ...]` enables or disables rudimentary tone-mapping to BT.709 SDR for each input file, 
+  to create SDR mezzanine streams using an HDR source. 
+  Provide one value, and it will apply to all input source files. 
+  Alternatively, provide one value per input source file, separated by a space.
+- `--test 1 || True` is a flag indicating a test run, which will parse the parameters and list the streams to generate, 
+  but won't actually generate the streams.
+
+The `metamezz.py` script uses the following parameter defaults that can only be modified in the script, 
+as they are not expected to be changed often, for consistency reasons:
+- The script expects the presence of `mezzanine.py` in the same folder.
+- The default border indicators are used and `boundaries.png` is expected to be in the `assets` folder.
+- The font is set to `Cousine-Regular.ttf` and is expected to be in the `assets` folder.
+- 4 QR code positions are used.
+- Start and end indicators are enabled.
+- The irregular AV sync pattern is set to repeat after 63 seconds.
+
+
+
+# Experimental scripts
+
+## Adding a second audio track to a mezzanine stream
+The `add_second_audio_track.py` Python script uses the [`pyttsx3`][pyttsx3] library 
+to create an audio file with the spoken audio "English". This is mixed with the original audio of a mezzanine file, 
+repeating the spoken audio every 15 seconds. 
+
+The script makes a copy of a mezzanine file, incorporating the new audio track as a second audio track.
+The first audio track remains the same as in the original mezzanine file.
 
 The output file naming convention is as follows: 
 `<mezzanine_stream_name>_2ndAudio[English].<mezzanine_stream_file_extension>`
 
-Usage example: `add_second_audio_track.py tos_A1_480x270@30_60.mp4` creates `tos_A1_480x270@30_60_2ndAudio[English].mp4`
+Usage example: 
+`add_second_audio_track.py tos_A1_480x270@30_60.mp4` creates `tos_A1_480x270@30_60_2ndAudio[English].mp4`
 
 Additional requirements:
 * [pydub >=0.24.1][pydub]
@@ -79,120 +241,3 @@ Additional requirements:
 
 [pydub]: https://github.com/jiaaro/pydub/
 [pyttsx3]: https://github.com/nateshmbhat/pyttsx3
-
-
-# Meta-script generating all annotated mezzanine streams
-
-An additional Python script `metamezz.py` has been created to enable generation of multiple annotated mezzanine streams with a single command.
-The `metamezz.py` script calls `mezzanine.py` to generate each annotated mezzanine file, so the requirements for `metamezz.py` are the same as for `mezzanine.py`. 
-
-You must provide a source file and an output file prefix: `py metamezz.py source1.mov source1_output_prefix`
-
-Output filenames have the following template: `<prefix>_<label>_<WxH>@<fps>_<duration-in-seconds>.mp4`  
-For example: `croatia_O2_3840x2160@50_60.mp4`  
-
-To generate a set of [WAVE mezzanine content](https://dash-large-files.akamaized.net/WAVE/Mezzanine/) you can execute the following:
-
-`py metamezz.py source/tearsofsteel_4k.mov mezzanine/tos source/DVB_PQ10_VandV.mov mezzanine/croatia -rjf resolutions_30_60.json resolutions_25_50.json --tonemap disabled enabled`
-
-This assumes the source file is in the `source` folder and generates the annotated mezzanine files in the `mezzanine` folder with the prefix `tos`.
-
-Parameters:
-- `-r <string_containing_JSON>` or `-rjf <path_to_JSON_file>` that provide JSON defining:
-	- The resolutions streams are generated in.
-	- The frame rate of each stream generated.
-	- The duration of each stream generated.
-	- The label to use for each combination of resolution+framerate+duration.
-	- The number of variants to create for each combination of resolution+framerate+duration.
-	- Whether to add a second audio track to the streams created for a resolution+framerate+duration combination. 
-- `--tonemap [<enabled||disabled>, ...]` enables or disables rudimentary tonemapping to BT.709 SDR for each input file, to create SDR mezzanine streams using an HDR source. Provide one value and it will apply to all input source files. Alternatively, provide one value per input source file, separated by a space.
-- `--test 1` is a flag indicating a test run, which will parse the parameters and list the streams to generate, but won't actually generate the streams.
-
-Labels are used to identify the annotated mezzanine streams. They are displayed in the video, encoded in the QR codes displayed in the video, and included in the output filename. In the `metamezz.py` script, each label is composed of a character and a number. 
-
-The character identifies the resolution and is automatically incremented for each of the resolutions in the list, starting with 'A' by default. 
-To be able to create multiple variants for some combinations of resolution+framerate+duration, a number is appended to every label, acting as an index.  
-For example, for the first resolution generated, 'A1' is the default label.
-When specifying N variants for the first resolution+framerate+duration combination, N streams will be created with the labels A1..AN.
-
-A list of 29.97/30/59.94/60Hz resolution+framerate+duration+label+variant combinations is defined in the `resolutions_30_60.json` file. 
-A list of 25/50Hz resolution+framerate+duration+label+variant combinations is defined in the `resolutions_25_50.json` file. 
-The JSON structure used is: `{ "WIDTHxHEIGHT" : [ [framerate (str), duration in seconds (int), label (str), number of variants (int), add second audio track (bool)], [...] ] }`  
-Multiple combinations of framerate, duration and variants (with/without second audio track) can be defined for each resolution.  
-These JSON files can be modified to suit your needs and passed to `metamezz.py` using the `-rjf` parameter.
-
-The `metamezz.py` script uses the following parameter defaults that can only be modified in the script, as they are not expected to be changed often, for consistency reasons:
-- The script expects the presence of `mezzanine.py` in the same folder.
-- The default border indicators are used and `boundaries.png` is expected to be in the same folder.
-- The font is set to `Cousine-Regular.ttf` and is expected to be in the same folder.
-- 4 QR code positions are used.
-- The script seeks to 00:01:25 in the source content, unless the content is too short.
-- Start and end indicators are enabled.
-- The irregular AV sync pattern is set to repeat after 63 seconds.
-
-The full details of the available commands for the script can be found by executing `py metamezz.py -h`  
-
-
-# Historical mezzanine creation scripts
-### Creating WAVE mezzanine content from Tears of Steel (ToS)
-
-### Tools Used
-
-* [Cousine monospaced font][cousine]
-* [ffmpeg 4.2.2][ffmpeg]
-* [ffprobe 4.2.2][ffmpeg]
-* [Gimp 2.10][gimp]
-* [imagemagick 7.0.10-11][imagemagick]
-* [qrencode 4.0.2][qrencode]
-* [Ubuntu 20.04 LTS][ubuntu]
-* [VLC 3.0.10][vlc]
-
-### Steps
-
-1. Download 1080p version of ToS from the Blender mirror site:
-`wget http://ftp.nluug.nl/pub/graphics/blender/demo/movies/ToS/ToS-4k-1920.mov`
-1. Extract a lossless 30-second segment from ToS, add top and bottom black bars to make it 16:9 aspect, 30fps, remove audio track:
-`ffmpeg -i ToS-4k-1920.mov -ss 00:00:07.250 -t 00:00:30.0 -c:v libx264 -preset slower -crf 5 -filter:v "pad=1920:1080:0:140,setsar=1,fps=fps=30" -an tos-30sec-video-16-9.mp4`
-1. Create a thirty-second audio track with beep every 5 seconds:
-`ffmpeg -f lavfi -i "sine=beep_factor=4:duration=30" -c:a "aac" -b:a 320k -ac 2 tos-30sec-audio.m4a`
-1. Export video frames at 30fps to sequence of lossless PNGs:
-`mkdir frames && ffmpeg -y -i tos-30sec-video-16-9.mp4 -filter_complex "fps=fps=30" frames/%d.png`
-1. Write a list of the PNGs to a text file:
-`ls frames | sort -n -k1.1 > images.txt`
-1. Export the timecodes of the video frames to a text file, using 00:00:00.000000 time format (ffprobe doesn't support 00:00:00.000 notation):
-`ffprobe -f lavfi -i "movie=tos-30sec-video-16-9.mp4,fps=fps=30" -show_frames -show_entries frame=pkt_pts_time -sexagesimal -of csv=p=0 > frametimes.txt`
-1. Trim trailing three millisecond digits from lines in frametimes.txt (must round up the remaining three because ffmpeg pts format is H:MM:SS.sss):
-`awk 'BEGIN{OFS=FS=":"}{ $3=sprintf("%06.3f", $3) }1' frametimes.txt > frametimes-sss.txt`
-1. Combine PNGs with frame timecodes into a tab-delimited text file:
-`paste images.txt frametimes-sss.txt > images-frametimes.txt`
-1. Generate QR codes (six-character clip ID, frame timestamp) for every frame.
-`./qrencode.sh`
-1. Apply QR codes to export PNGs (note that this script will take a while).
-`./imagemagick.sh`
-1. Use QR'd PNGs as sources to generate lossless MP4 file with QR codes and timecode box:
-`ffmpeg -framerate 30 -start_number 0 -i "composited/%d.png" -c:v libx264 -preset slower -crf 5 -filter_complex "format=yuv420p,fps=fps=30,drawtext=fontfile=/usr/share/fonts/truetype/cousine/Cousine-Regular.ttf: text='%{pts \:hms}': x=(w-tw)/2: y=h-(4*lh): fontcolor=white: fontsize=60: box=1: boxborderw=20: boxcolor=Black" tos-qrs.mp4`
-1. Create frame boundary markers overlay in Gimp, export to PNG (see boundaries.xcf and boundaries.png).
-1. Create final file with frame boundary overlay and audio:
-`ffmpeg -y -i tos-qrs.mp4 -i boundaries.png -i tos-30sec-audio.m4a -c:v libx264 -preset slower -crf 5 -filter_complex "[0:v][1:v] overlay=0:0,format=yuv420p,fps=fps=30" -c:a "aac" -b:a 320k -ac 2 tos-30sec-final.mp4`
-1. Verify tos-30sec-final.mp4 playback in VLC. Mobile QR reader apps are available in the Apple and Google stores to verify the QR codes in each frame against the timecode.
-
-[cousine]: https://fonts.google.com/specimen/Cousine
-[ffmpeg]: https://ffmpeg.org
-[gimp]: https://gimp.org
-[imagemagick]: https://imagemagick.org
-[qrencode]: https://fukuchi.org/works/qrencode/index.html.en
-[ubuntu]: https://ubuntu.com
-[vlc]: https://fonts.google.com/specimen/Cousine
-
-### Alternate Single Script Method
-
-The above steps have been combined into a single script `mezzanine.sh`. To accomplish the above steps with the same result you will need the following original files referenced above:
-
-- `ToS-4k-1920.mov`
-- `boundaries.png`
-- `Cousine-Regular.ttf`
-
-You can then execute the following to produce the equivalent output file:
-`./mezzanine.sh -s 00:00:07.250 -d 30 -f 30 -b boundaries.png -t "Cousine-Regular.ttf" ToS-4k-1920.mov tos-30sec-final.mp4`
-
-The full details of the available commands for the script can be found by executing `./mezzanine.sh -h`
