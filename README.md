@@ -5,7 +5,9 @@ multimedia files are used by the WAVE test suite to programmatically identify co
 industry interoperability effort for streaming internet video supported by over 60 companies and hosted by the Consumer Technology Association.  For more information on 
 the WAVE Project, the WAVE test suite, please see [CTA.tech/WAVE](https://CTA.tech/WAVE) or email standards@CTA.tech.”
 
+
 # Contents
+
 1. [Creating annotated WAVE mezzanine content](#creating-annotated-wave-mezzanine-content)
 2. [Generating all annotated WAVE mezzanine content](#generating-all-annotated-wave-mezzanine-content)
 3. [Experimental scripts](#experimental-scripts)
@@ -49,6 +51,7 @@ The `mezzanine.py` script does the following to the source content:
   The codec used depends on source content color space:
 	- H.264/AVC for BT.709 or undefined
 	- H.265/HEVC for BT.2020nc or other defined value
+  
   Note: These codecs are used to ensure the properties of the content are signalled correctly. 
   A more appropriate mezzanine video codec or raw YUV data may be used in future.
 
@@ -168,7 +171,7 @@ These JSON files are passed to `metamezz.py` using the `-rjf` parameter.
 
 The JSON structure used is: 
 `{ "WIDTHxHEIGHT" : 
-	[ [framerate (str), duration in seconds (int), starting position in source (str, HH:MM:SS), 
+	[ [framerate (str), duration in seconds (float), starting position in source (str, HH:MM:SS), 
 		label (str), number of variants (int), add second audio track (bool)], 
 	[...] ]}`
 
