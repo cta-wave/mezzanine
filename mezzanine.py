@@ -14,6 +14,7 @@ import qrcode
 
 from bp_gen.bitpattern import bp_create
 from datetime import date
+from decimal import *
 from json import JSONEncoder
 from pathlib import Path
 from shutil import which
@@ -209,7 +210,7 @@ font = 'monospace'
 frame_number_padding = 7
 framerate = '30'
 label = 'mezz'
-resolution= '1920x1080'
+resolution = '1920x1080'
 seek = '00:00:00.000'
 start_frame = 1 	# Set to 0 or 1. Determines starting point for annotations,
 					# i.e. frame 0 00:00:00 or frame 1 00:00:<frame duration>
@@ -225,7 +226,7 @@ avsync_metadata_filepath = Path('avsyncmetadata.json')
 beep_file = 'beeps.wav'
 beep_audio_samplerate = '48000'
 flash_file_dir = Path('_tmp_flash')
-test_sequence_gen_script = Path('test_sequence_gen/src/generate.py') # Script used to generate AV-sync flashes and beeps
+test_sequence_gen_script = Path('test_sequence_gen/src/generate.py')  # Script used to generate AV-sync flashes & beeps
 
 # Bit pattern
 bitpat_file_dir = Path('_tmp_bp')
@@ -242,8 +243,6 @@ metadata_properties_range = {
 	'unknown': "unknown", 'unspecified': "unknown",
 	'limited': "limited", 'tv': "limited", 'mpeg': "limited",
 	'full': "full", 'pc': "full", 'jpeg': "full"} 	# Mapping source range terminology to unknown/limited/full
-#mezz_source_cdn_path = '../../Original/' 	# Relative mezzanine source file URI prefix
-											# (https://dash-large-files.akamaized.net/WAVE/Original/)
 mezz_source_cdn_path = 'https://dash-large-files.akamaized.net/WAVE/Original/' 	# Mezzanine source file URI prefix
 output_video_codec_name = {
 	'libx264': "H.264",
@@ -271,7 +270,7 @@ start_end_indicator_nb_frames = 1 	# Number of indicator frames to insert at the
 start_end_indicators_cl = [] 		# Input content ffmpeg parameters,
 									# depends on whether start_end_indicators are included or not
 start_end_indicators_vmix_cl = '[content_video] concat=n=1:v=1:a=0 [video_with_start_indicator]; ' \
-							   '[bg_video][video_with_start_indicator] overlay=[main_video];'
+								'[bg_video][video_with_start_indicator] overlay=[main_video];'
 								# Video mixing ffmpeg parameters,
 								# depends on whether start_end_indicators are included or not
 start_end_indicators_amix_cl = '[audio_with_avsync] concat=n=1:v=0:a=1 [aout]'
@@ -384,7 +383,7 @@ parser.add_argument(
 	required=False, 
 	help="Unique pattern window length (in seconds). Beep/flash sequence will repeat after 2^n -1 seconds. "
 		 "Default is "+avsync_pattern_window_len+", meaning the sequence repeats after "
-		 +str(2**int(avsync_pattern_window_len)-1)+" seconds.")
+		 + str(2**int(avsync_pattern_window_len)-1)+" seconds.")
 
 parser.add_argument('input', help="Source file.")
 parser.add_argument('output', help="Output file.")
@@ -422,7 +421,7 @@ if args.qr_positions is not None:
 	qr_positions = args.qr_positions
 
 if args.resolution is not None:
-	resolution= args.resolution
+	resolution = args.resolution
 
 if args.seek is not None:
 	seek = args.seek
@@ -469,8 +468,8 @@ if not os.path.isdir(output.parent):
 # Check that output exists if only (re)generating metadata
 if metadata_gen_only and not os.path.isfile(output):
 	sys.exit("Mezzanine file \""+str(output)+"\" does not exist. \n"
-			 "Cannot generate metadata without the corresponding mezzanine file. \n"
-			 "Set --metadata-only to 'disabled' to generate mezzanine and metadata.")
+			"Cannot generate metadata without the corresponding mezzanine file. \n"
+			"Set --metadata-only to 'disabled' to generate mezzanine and metadata.")
 
 # Set width and height based on resolution
 width = resolution.split('x')[0]
@@ -611,17 +610,18 @@ content_duration = duration
 # Set start/end indicator frame FFMPEG parameters 
 # and associated filter parameters to concatenate with source test sequence before output
 if start_end_indicators == 'enabled':
-	content_duration -= 2*start_end_indicator_nb_frames/eval(framerate)
+	content_duration = Decimal(content_duration-(2*start_end_indicator_nb_frames/eval(framerate))).quantize(Decimal('.001'), rounding=ROUND_UP)
 	start_indicator_offset = start_end_indicator_nb_frames/eval(framerate)
 	start_indicator_nb_frames = start_end_indicator_nb_frames
 	end_indicator_nb_frames = start_end_indicator_nb_frames
-	start_end_indicators_cl = ['-t', str(start_end_indicator_nb_frames/eval(framerate)), '-f', 'lavfi', 
+	indicator_duration = str(Decimal(start_end_indicator_nb_frames/eval(framerate)).quantize(Decimal('.001'), rounding=ROUND_DOWN))
+	start_end_indicators_cl = ['-t', indicator_duration, '-f', 'lavfi', 
 							   '-i', 'color='+start_indicator_color+':size='+width+'x'+height+':rate='+framerate,
-							   '-t', str(start_end_indicator_nb_frames/eval(framerate)), '-f', 'lavfi', 
+							   '-t', indicator_duration, '-f', 'lavfi', 
 							   '-i', 'sine=frequency=1000:beep_factor=1:sample_rate='+beep_audio_samplerate,
-							   '-t', str(start_end_indicator_nb_frames/eval(framerate)), '-f', 'lavfi', 
+							   '-t', indicator_duration, '-f', 'lavfi', 
 							   '-i', 'color='+end_indicator_color+':size='+width+'x'+height+':rate='+framerate,
-							   '-t', str(start_end_indicator_nb_frames/eval(framerate)), '-f', 'lavfi', 
+							   '-t', indicator_duration, '-f', 'lavfi', 
 							   '-i', 'sine=frequency=1000:beep_factor=1:sample_rate='+beep_audio_samplerate]
 	start_end_indicators_vmix_cl = '[7][content_video][9]\
 										concat=\
@@ -638,12 +638,13 @@ if start_end_indicators == 'enabled':
 	mezz_properties.end_indicator = True
 	
 elif start_end_indicators == 'start':
-	content_duration -= start_end_indicator_nb_frames/eval(framerate)
+	content_duration = Decimal(content_duration-(start_end_indicator_nb_frames/eval(framerate))).quantize(Decimal('.001'), rounding=ROUND_UP)
 	start_indicator_offset = start_end_indicator_nb_frames/eval(framerate)
 	start_indicator_nb_frames = start_end_indicator_nb_frames
-	start_end_indicators_cl = ['-t', str(start_end_indicator_nb_frames/eval(framerate)), '-f', 'lavfi', 
+	indicator_duration = str(Decimal(start_end_indicator_nb_frames/eval(framerate)).quantize(Decimal('.001'), rounding=ROUND_DOWN))
+	start_end_indicators_cl = ['-t', indicator_duration, '-f', 'lavfi', 
 							   '-i', 'color='+start_indicator_color+':size='+width+'x'+height+':rate='+framerate, 
-							   '-t', str(start_end_indicator_nb_frames/eval(framerate)), '-f', 'lavfi', 
+							   '-t', indicator_duration, '-f', 'lavfi', 
 							   '-i', 'sine=frequency=1000:beep_factor=1:sample_rate='+beep_audio_samplerate]
 	start_end_indicators_vmix_cl = '[7][content_video]\
 										concat=\
@@ -659,11 +660,12 @@ elif start_end_indicators == 'start':
 	mezz_properties.start_indicator = True
 	
 elif start_end_indicators == 'end':
-	content_duration -= start_end_indicator_nb_frames/eval(framerate)
+	content_duration = Decimal(content_duration-(start_end_indicator_nb_frames/eval(framerate))).quantize(Decimal('.001'), rounding=ROUND_UP)
 	end_indicator_nb_frames = start_end_indicator_nb_frames
-	start_end_indicators_cl = ['-t', str(start_end_indicator_nb_frames/eval(framerate)), '-f', 'lavfi', 
+	indicator_duration = str(Decimal(start_end_indicator_nb_frames/eval(framerate)).quantize(Decimal('.001'), rounding=ROUND_DOWN))
+	start_end_indicators_cl = ['-t', indicator_duration, '-f', 'lavfi', 
 							   '-i', 'color='+end_indicator_color+':size='+width+'x'+height+':rate='+framerate,
-							   '-t', str(start_end_indicator_nb_frames/eval(framerate)), '-f', 'lavfi', 
+							   '-t', indicator_duration, '-f', 'lavfi', 
 							   '-i', 'sine=frequency=1000:beep_factor=1:sample_rate='+beep_audio_samplerate]
 	start_end_indicators_vmix_cl = '[content_video][7]\
 										concat=\
@@ -679,7 +681,7 @@ elif start_end_indicators == 'end':
 	mezz_properties.end_indicator = True
 
 
-# Compute the size of various overlay blocks so they are consistently placed
+# Compute the size of various overlay blocks, so they are consistently placed
 qr_size = int(round(int(height)*0.25, 0))
 flash_block_size = int(round(int(height)*0.125, 0))
 
@@ -704,7 +706,8 @@ if not metadata_gen_only:
 			print("Failed to create the directory for the QR code image files.")
 
 	for i in range(0, frame_count):
-		timecode = '{:02d}:{:02d}:{:06.3f}'.format(int(frame_pts/3600), int(frame_pts/60), frame_pts % 60)
+		frame_pts_rounded = round(frame_pts, 3)
+		timecode = '{:02d}:{:02d}:{:06.3f}'.format(int(frame_pts_rounded/3600), int(frame_pts_rounded/60) % 60, frame_pts_rounded % 60)
 		padded_frame = str(i+start_frame).zfill(frame_number_padding)
 		
 		qr_filename = Path(str(qr_file_dir)+'\\'+(str(i).zfill(5)+'.png'))
@@ -820,7 +823,7 @@ if not metadata_gen_only:
 #     - Written to the supplied output location (overwriting is enabled)
 ffmpeg_cl = ['ffmpeg', 
 	'-t', str(content_duration), '-i', beep_file,
-	'-ss', seek, '-t', str(content_duration), '-i', str(input),
+	'-ss', seek, '-t', str(content_duration), '-stream_loop', '-1', '-i', str(input),
 	'-framerate', framerate, '-i', str(boundaries),
 	'-framerate', framerate, '-thread_queue_size', '1024', '-start_number', '0',
 			 '-i', str(Path(str(qr_file_dir)+'\\'+'%05d.png')),
@@ -851,7 +854,7 @@ ffmpeg_cl = ['ffmpeg',
 			format='+output_video_encoding_cl[output_video_encoding_cl.index('-pix_fmt')+1]+',\
 			fps=\
 				fps='+framerate+':\
-				start_time='+str(start_indicator_offset)+'\
+				start_time='+str(round(start_indicator_offset, 3))+'\
 		[content_video];\
 		[3]\
 			scale=\
@@ -1037,7 +1040,7 @@ if not metadata_gen_only:
 	for i in range(0, frame_count):
 		qr_filename = str(Path(str(qr_file_dir)+'\\'+(str(i).zfill(5)+'.png')))
 		flash_filename = str(Path(str(flash_file_dir)+'\\'+(str(i).zfill(5)+'.png')))
-		bitpattern_filename = str(Path(str(bitpat_file_dir)+'\\'+(str(i).zfill(5)+'.png')))
+		bitpattern_filename = str(Path(str(bitpat_file_dir)+'\\'+(str(i+start_frame).zfill(5)+'.png')))
 		try:
 			os.remove(qr_filename)
 		except OSError as e:

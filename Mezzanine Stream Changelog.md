@@ -1,4 +1,38 @@
 # CTA WAVE Mezzanine Changelog
+Version 3 (review started on 2022-08-16)
+- This mezzanine release will be moved here after approval: https://dash.akamaized.net/WAVE/Mezzanine/releases/3/
+- Fixed QR code for last frame (1800) in 30fps 60 second mezzanine streams (timestamp now correctly contains 00:01:00.000 instead of 00:00:60.000)
+  - https://dash.akamaized.net/WAVE/Mezzanine/under_review/2022-08-16/
+- Added 30s mezzanine streams to reduce testing time
+  - https://dash.akamaized.net/WAVE/Mezzanine/under_review/2022-04-21/
+- Added 2h mezzanine streams for long duration tests
+  - https://dash.akamaized.net/WAVE/Mezzanine/under_review/2022-07-20/
+- New files (8):
+    - croatia_L1_1920x1080@25_30.mp4
+    - croatia_L1_1920x1080@50_30.mp4
+    - tos_L1_1920x1080@29.97_30.mp4
+    - tos_L1_1920x1080@30_30.mp4
+    - tos_L1_1920x1080@59.94_30.mp4
+    - tos_L1_1920x1080@60_30.mp4
+	- croatia_LD1_1920x1080@25_7200.mp4
+	- tos_LD1_1920x1080@30_7200.mp4	
+- Updated files (14):
+    - tos_A1_480x270@30_60.mp4
+    - tos_B1_512x288@30_60.mp4
+    - tos_C1_640x360@30_60.mp4
+    - tos_D1_704x396@30_60.mp4
+    - tos_E1_720x404@30_60.mp4
+    - tos_F1_768x432@30_60.mp4
+    - tos_G1_852x480@30_60.mp4
+    - tos_H1_960x540@30_60.mp4
+    - tos_I1_1024x576@30_60.mp4
+    - tos_I2_1024x576@30_60.mp4
+    - tos_J1_1280x720@30_60.mp4
+    - tos_K1_1600x900@30_60.mp4
+    - tos_L1_1920x1080@30_60.mp4
+    - tos_L2_1920x1080@30_60.mp4
+
+
 Version 2 (review started on 2021-08-09, approved on 2021-08-31)
 - Mezzanine content reorganised into new folder structure:
   - New releases are located in folders named after the release version here: https://dash.akamaized.net/WAVE/Mezzanine/releases/
