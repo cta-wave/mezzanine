@@ -1,25 +1,62 @@
 # CTA WAVE Mezzanine Changelog
-Version 2 (review started on 2021-08-09, approved on 2021-08-31)
+**Version 3** (review started on 2022-10-12, approved on 2022-10-19)
+- This mezzanine release is located here: https://dash.akamaized.net/WAVE/Mezzanine/releases/3/
+- Changes:
+  - Fixed QR code for last frame (1800) in 30fps 60 second mezzanine streams (timestamp now correctly contains 00:01:00.000 instead of 00:00:60.000)
+  - Added 30s mezzanine streams to reduce testing time
+  - Added 2h mezzanine streams for long duration tests
+  - Added audio mezzanine streams
+- New files (12):
+  - croatia_L1_1920x1080@25_30.mp4
+  - croatia_L1_1920x1080@50_30.mp4
+  - tos_L1_1920x1080@29.97_30.mp4
+  - tos_L1_1920x1080@30_30.mp4
+  - tos_L1_1920x1080@59.94_30.mp4
+  - tos_L1_1920x1080@60_30.mp4
+  - croatia_LD1_1920x1080@25_7200.mp4
+  - tos_LD1_1920x1080@30_7200.mp4
+  - PN01.wav
+  - PN02.wav
+  - PN03.wav
+  - PN04.wav
+- Updated files (14):
+  - tos_A1_480x270@30_60.mp4
+  - tos_B1_512x288@30_60.mp4
+  - tos_C1_640x360@30_60.mp4
+  - tos_D1_704x396@30_60.mp4
+  - tos_E1_720x404@30_60.mp4
+  - tos_F1_768x432@30_60.mp4
+  - tos_G1_852x480@30_60.mp4
+  - tos_H1_960x540@30_60.mp4
+  - tos_I1_1024x576@30_60.mp4
+  - tos_I2_1024x576@30_60.mp4
+  - tos_J1_1280x720@30_60.mp4
+  - tos_K1_1600x900@30_60.mp4
+  - tos_L1_1920x1080@30_60.mp4
+  - tos_L2_1920x1080@30_60.mp4
+
+
+**Version 2** (review started on 2021-08-09, approved on 2021-08-31)
 - Mezzanine content reorganised into new folder structure:
   - New releases are located in folders named after the release version here: https://dash.akamaized.net/WAVE/Mezzanine/releases/
   - New mezzanine content under review is located in folders named after the upload date (YYYY-MM-DD) here: https://dash.akamaized.net/WAVE/Mezzanine/under_review/
   - Mezzanine content to be deleted is located in folders named after the upload date (YYYY-MM-DD) here: https://dash.akamaized.net/WAVE/Mezzanine/to_be_deleted/
-- This mezzanine release will be moved here after approval: https://dash.akamaized.net/WAVE/Mezzanine/releases/2/
+- This mezzanine release is located here: https://dash.akamaized.net/WAVE/Mezzanine/releases/2/
 - Sources:
   - Mezzanine for 15/30/60 fps and fractional rates 14.985/29.97/59.94 fps created using [Tears of Steel (tos)](https://dash-large-files.akamaized.net/WAVE/Original/tearsofsteel_4k.mov)
   - Mezzanine for 12.5/25/50 fps created using [EBU Croatia footage (croatia)](https://dash-large-files.akamaized.net/WAVE/Original/DVB_PQ10_VandV.mov)
   - Mezzanine for splice "ad" 30 fps and fractional rate 29.97 fps created using [Big Buck Bunny (bbb)](https://dash-large-files.akamaized.net/WAVE/Original/bigbuckbunny_trailer_1080p30.mp4)
   - Mezzanine for splice "ad" 25 fps created using [Big Buck Bunny (bbb)](https://dash-large-files.akamaized.net/WAVE/Original/bigbuckbunny_trailer_1080p.mov)
-- Resolutions from 480x270 (label A) to 3160x2160 (label O), as required for the [WAVE test content](https://docs.google.com/spreadsheets/d/1hxbqBdJEEdVIDEkpjZ8f5kvbat_9VGxwFP77AXA_0Ao/)
-- Mezzanine for splice tests is prefixed with "splice_" ("splice_main_" and "splice_ad_").
-- These mezzanine streams contain BT.709 SDR content, encoded in AVC (`libx264 -preset slower -crf 5`)
-- Notable changes:
+- Mezzanine streams include:
+  - Resolutions from 480x270 (label A) to 3160x2160 (label O), as required for the AVC [WAVE test content](https://docs.google.com/spreadsheets/d/1hxbqBdJEEdVIDEkpjZ8f5kvbat_9VGxwFP77AXA_0Ao/)
+  - Mezzanine for splice tests is prefixed with "splice_" ("splice_main_" and "splice_ad_").
+  - These mezzanine streams contain BT.709 SDR content, encoded in AVC (`libx264 -preset slower -crf 5`)
+- Changes:
   - Metadata for each mezzanine stream, including video properties and license, now saved to JSON files named as follows: <mezzanine_filename>.json
   - A/V sync metadata is saved to JSON files named as follows: <mezzanine_filename>_avsync.json
   - Annotations now added to green start frame and red end frame, starting from frame 1 (not frame 0).
   - Stream duration is now exactly 60 seconds (instead of 60 seconds + 2 frames in the previous version).
   - Black background added behind QR codes to help with detection.
-- Only updates of existing mezzanine streams, no additional streams and no removed streams.
 - New files (12):
     - splice_ad_bbb_AD-A1_1280x720@25_5.76.mp4
     - splice_ad_bbb_AD-A1_1280x720@29.97_21.255.mp4
@@ -132,7 +169,7 @@ Version 2 (review started on 2021-08-09, approved on 2021-08-31)
     - tos_O1_3840x2160@60_60.mp4
 
 
-Version 1 (review started on 2021-04-13, approved on 2021-04-27)
+**Version 1** (review started on 2021-04-13, approved on 2021-04-27)
 - Mezzanine content located here (excluding sub-folders): https://dash-large-files.akamaized.net/WAVE/Mezzanine/
 - Mezzanine for 15/30/60 fps and fractional rates 14.985/29.97/59.94 fps created using [Tears of Steel (tos)](https://dash-large-files.akamaized.net/WAVE/Original/tearsofsteel_4k.mov)
 - Mezzanine for 12.5/25/50 fps created using [EBU Croatia footage (croatia)](https://dash-large-files.akamaized.net/WAVE/Original/DVB_PQ10_VandV.mov)
