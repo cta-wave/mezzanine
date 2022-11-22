@@ -1,0 +1,38 @@
+{
+    "Mezzanine": {
+        "name": "croatia_D1_704x396@50_60",
+        "URI": "./croatia_D1_704x396@50_60.mp4",
+        "version": 3,
+        "specification_version": 1,
+        "creation_date": "2022-10-03",
+        "license": "\u00a9 Croatia (2019), credited to EBU, used and licensed under Creative Commons Attribution 4.0 International (CC BY 4.0) (https://creativecommons.org/licenses/by/4.0/) by the Consumer Technology Association (CTA)\u00ae / annotated, encoded and compressed from original.",
+        "command_line": "mezzanine.py --duration 60 --framerate 50 --label D1 --qr-positions 4 --resolution 704x396 --seek 00:01:25 --start-end-indicators enabled --font assets\\Cousine-Regular.ttf --window-len 6 --tonemap enabled --version 3 --spec-version 1 --metadata-only enabled ..\\source\\DVB_PQ10_VandV.mov releases\\3\\croatia_D1_704x396@50_60.mp4",
+        "ffmpeg_command_line": "ffmpeg -t 59.961 -i beeps.wav -ss 00:01:25 -t 59.961 -stream_loop -1 -i ..\\source\\DVB_PQ10_VandV.mov -framerate 50 -i assets\\boundaries.png -framerate 50 -thread_queue_size 1024 -start_number 0 -i _tmp_qr\\%05d.png -framerate 50 -thread_queue_size 1024 -start_number 0 -i _tmp_flash\\%05d.png -framerate 50 -thread_queue_size 1024 -start_number 0 -i _tmp_bp\\%05d.png -f lavfi -i color=black:d=60.0:s=704x396 -t 0.020 -f lavfi -i color=0x006400:size=704x396:rate=50 -t 0.020 -f lavfi -i sine=frequency=1000:beep_factor=1:sample_rate=48000 -t 0.020 -f lavfi -i color=0x8B0000:size=704x396:rate=50 -t 0.020 -f lavfi -i sine=frequency=1000:beep_factor=1:sample_rate=48000 -filter_complex [6]setpts=PTS-STARTPTS,fps=fps=50:start_time=0[bg_video];[1:v]zscale=transfer=linear,tonemap=hable:desat=0,zscale=transfer=709,scale=size=704x396:force_original_aspect_ratio=decrease,setsar=1,pad=w=704:h=396:x=(ow-iw)/2:y=(oh-ih)/2,format=yuv420p,fps=fps=50:start_time=0.02[content_video];[3]scale=w=99:h=-1[qrs];[7][content_video][9]concat=n=3:v=1:a=0[video_with_start_end_indicators];[bg_video][video_with_start_end_indicators]overlay=[main_video];[main_video]drawtext=fontfile='./assets/Cousine-Regular.ttf':text='D1':x=(w-tw)/10:y=(3*lh):fontcolor=white:fontsize=h*0.06:box=1:boxborderw=10:boxcolor=black,drawbox=x='(704*0.1)-4':y='(396/2)-99-4':w=198+4:h=198+4:t=fill:color=black,drawtext=fontfile='./assets/Cousine-Regular.ttf':text='%{pts\\:hms\\:0.02};%{eif\\:n+1\\:d\\:7};50':x=(w-tw)/2:y=h-(4*lh):fontcolor=white:fontsize=h*0.06:box=1:boxborderw=10:boxcolor=black[annotated_main_video];[4]scale=size=50x50[avsync_flash];[annotated_main_video][avsync_flash]overlay=x='main_w*0.925-overlay_w':y='main_h*0.1':shortest=1:repeatlast=0[video_with_avsync_flash];[video_with_avsync_flash]drawbox=x=1:y=1:w=702:h=394:c=black:t=1[video_with_inner_border];[video_with_inner_border]drawbox=x=0:y=0:w=704:h=396:c=white:t=1[video_with_borders];[2]scale=size=704x396[boundary_arrows];[video_with_borders][boundary_arrows]overlay=repeatlast=1[bounded_video];[bounded_video][qrs]overlay=x='(main_w*0.1)+if(between(mod(n,4),2,3),overlay_w)':y='(main_h/2)-ifnot(between(mod(n,4),1,2),overlay_h)':shortest=1:repeatlast=0[bounded_video_with_qrs];[bounded_video_with_qrs][5]overlay=x=4/480*704:y=4/270*396[vout];[1:a]aresample=48000[resampled_main_audio];[0][resampled_main_audio]amix=inputs=2:duration=shortest:[audio_with_avsync];[8][audio_with_avsync][10]concat=n=3:v=0:a=1[aout] -map [vout] -map [aout] -c:v libx264 -preset slower -crf 5 -colorspace bt709 -pix_fmt yuv420p -color_primaries bt709 -color_trc bt709 -color_range tv -c:a aac -b:a 320k -ac 2 -y -t 60.0 releases\\3\\croatia_D1_704x396@50_60.mp4",
+        "md5": "7cf5b7c7cfc4b2c524ce4e157a780905",
+        "properties": {
+            "width": 704,
+            "height": 396,
+            "frame_rate": 50,
+            "scan": "progressive",
+            "pixel_format": "yuv420p",
+            "bit_depth": 8,
+            "color_primaries": "bt709",
+            "transfer_characteristics": "bt709",
+            "matrix_coefficients": "bt709",
+            "range": "limited",
+            "duration": 60.0,
+            "frame_count": 3000,
+            "start_frame": 1,
+            "start_indicator": true,
+            "end_indicator": true,
+            "qr_positions": 4,
+            "label": "D1",
+            "codec": "H.264"
+        },
+        "source": {
+            "name": "DVB_PQ10_VandV.mov",
+            "URI": "https://dash-large-files.akamaized.net/WAVE/Original/DVB_PQ10_VandV.mov",
+            "license": "This material has been recorded by the EBU, who owns the copyright. The EBU (licensor) has licensed it under the Creative Commons Attribution 4.0 license (https://creativecommons.org/licenses/by/4.0/). In short, this means you can freely reuse and distribute this content, also commercially, for as long you provide a proper attribution."
+        }
+    }
+}
