@@ -28,7 +28,7 @@ channels = 2
 duration = 60        # [s]
 samplerate = 48000   # [Hz]
 bw = 7000            # [Hz]
-loop = 0
+silentstart = 0
 
 # Basic argument handling for the following: -d -f -s -c output
 parser = argparse.ArgumentParser(description="Test of audio PN noise and correlation methods")
@@ -47,9 +47,9 @@ parser.add_argument(
     help="The number of channels, may be 1 or more. Only the first 2 channels FL/FR will contain audio, "
          "others will contain digital silence. Default: "+str(channels))
 parser.add_argument(
-    '-l', '--loop', required=False, choices=['0', '1'],
-    help="Determines whether the audio file generated can be looped seamlessly (=1) "
-         "or whether it starts with silence (=0). Default: "+str(loop))
+    '--silentstart', required=False, choices=['0', '1'],
+    help="Determines whether the audio file generated has initial silence (=1) or not (=0). "
+         "Default: "+str(silentstart))
 parser.add_argument('output', help="Output file (fname.ftp).")
 args = parser.parse_args()
 
@@ -72,8 +72,8 @@ if args.samplerate is not None:
     samplerate = args.samplerate
 if args.channels is not None:
     channels = args.channels
-if args.loop is not None:
-    loop = int(args.loop)
+if args.silentstart is not None:
+    silentstart = int(args.silentstart)
 
 # Generate a binary noise array from a uniform distribution.  The array ndata is of type ndarray (1-D)
 ss = np.random.SeedSequence(seed)
@@ -85,10 +85,10 @@ ndata = gen.uniform(-1, 1, duration*samplerate)     # duration 60 s, sample rate
 
 # Filter to band limit the signal; put more emphasis on flatness of passband than on stopband suppression
 fc = signal.remez(numtaps=151, bands=[0, bw, bw+1000, samplerate/2], desired=[1, 0], weight=[4, 1], fs=samplerate)
-if loop >= 1:
-    fdata = signal.filtfilt(fc, 1, ndata)
-else:
+if silentstart >= 1:
     fdata = signal.lfilter(fc, 1, ndata)
+else:
+    fdata = signal.filtfilt(fc, 1, ndata)
 
 # Normalize the signal to be within the bounds usable by 16-bit audio and convert to int16
 fdata *= np.iinfo(np.int16).max/max(abs(fdata))     # scale to int16 range
