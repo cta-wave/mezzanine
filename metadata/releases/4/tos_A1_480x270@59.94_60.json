@@ -1,0 +1,38 @@
+{
+    "Mezzanine": {
+        "name": "tos_A1_480x270@59.94_60",
+        "URI": "./tos_A1_480x270@59.94_60.mp4",
+        "version": 4,
+        "specification_version": 1,
+        "creation_date": "2023-02-13",
+        "license": "\u00a9 Tears of Steel (https://mango.blender.org/about/) (2012) by Blender Institute, credited to Ton Roosendaal and Ian Hubert, used and licensed under Creative Commons Attribution 3.0 Unported (CC BY 3.0) (https://creativecommons.org/licenses/by/3.0/) by the Consumer Technology Association (CTA)\u00ae / annotated, encoded and compressed from original.",
+        "command_line": "mezzanine.py --duration 60 --framerate 60000/1001 --label A1 --qr-positions 4 --resolution 480x270 --seek 00:01:25 --start-end-indicators enabled --font assets\\Cousine-Regular.ttf --window-len 6 --tonemap disabled --version 4 --spec-version 1 --metadata-only enabled ..\\source\\tearsofsteel_4k.mov releases\\4\\tos_A1_480x270@59.94_60.mp4",
+        "ffmpeg_command_line": "ffmpeg -t 59.967 -i beeps.wav -ss 00:01:25 -t 59.967 -stream_loop -1 -i ..\\source\\tearsofsteel_4k.mov -framerate 60000/1001 -i assets\\boundaries.png -framerate 60000/1001 -thread_queue_size 1024 -start_number 0 -i _tmp_qr\\%05d.png -framerate 60000/1001 -thread_queue_size 1024 -start_number 0 -i _tmp_flash\\%05d.png -framerate 60000/1001 -thread_queue_size 1024 -start_number 0 -i _tmp_bp\\%05d.png -f lavfi -i color=black:d=60.0:s=480x270 -t 0.016 -f lavfi -i color=0x006400:size=480x270:rate=60000/1001 -t 0.016 -f lavfi -i sine=frequency=1000:beep_factor=1:sample_rate=48000 -t 0.016 -f lavfi -i color=0x8B0000:size=480x270:rate=60000/1001 -t 0.016 -f lavfi -i sine=frequency=1000:beep_factor=1:sample_rate=48000 -filter_complex [6]setpts=PTS-STARTPTS,fps=fps=60000/1001:start_time=0[bg_video];[1:v]scale=size=480x270:force_original_aspect_ratio=decrease,setsar=1,pad=w=480:h=270:x=(ow-iw)/2:y=(oh-ih)/2,format=yuv420p,fps=fps=60000/1001:start_time=0.017[content_video];[3]scale=w=68:h=-1[qrs];[7][content_video][9]concat=n=3:v=1:a=0[video_with_start_end_indicators];[bg_video][video_with_start_end_indicators]overlay=[main_video];[main_video]drawtext=fontfile='./assets/Cousine-Regular.ttf':text='A1':x=(w-tw)/10:y=(3*lh):fontcolor=white:fontsize=h*0.06:box=1:boxborderw=10:boxcolor=black,drawbox=x='(480*0.1)-4':y='(270/2)-68-4':w=136+4:h=136+4:t=fill:color=black,drawtext=fontfile='./assets/Cousine-Regular.ttf':text='%{pts\\:hms\\:0.016683333333333335};%{eif\\:n+1\\:d\\:7};59.94':x=(w-tw)/2:y=h-(4*lh):fontcolor=white:fontsize=h*0.06:box=1:boxborderw=10:boxcolor=black[annotated_main_video];[4]scale=size=34x34[avsync_flash];[annotated_main_video][avsync_flash]overlay=x='main_w*0.925-overlay_w':y='main_h*0.1':shortest=1:repeatlast=0[video_with_avsync_flash];[video_with_avsync_flash]drawbox=x=1:y=1:w=478:h=268:c=black:t=1[video_with_inner_border];[video_with_inner_border]drawbox=x=0:y=0:w=480:h=270:c=white:t=1[video_with_borders];[2]scale=size=480x270[boundary_arrows];[video_with_borders][boundary_arrows]overlay=repeatlast=1[bounded_video];[bounded_video][qrs]overlay=x='(main_w*0.1)+if(between(mod(n,4),2,3),overlay_w)':y='(main_h/2)-ifnot(between(mod(n,4),1,2),overlay_h)':shortest=1:repeatlast=0[bounded_video_with_qrs];[bounded_video_with_qrs][5]overlay=x=4/480*480:y=4/270*270[vout];[1:a]aresample=48000[resampled_main_audio];[0][resampled_main_audio]amix=inputs=2:duration=shortest:[audio_with_avsync];[8][audio_with_avsync][10]concat=n=3:v=0:a=1[aout] -map [vout] -map [aout] -c:v libx264 -preset slower -crf 5 -colorspace bt709 -pix_fmt yuv420p -color_primaries bt709 -color_trc bt709 -color_range tv -c:a aac -b:a 320k -ac 2 -y -t 60.0 releases\\4\\tos_A1_480x270@59.94_60.mp4",
+        "md5": "526f0ab54046052703e04b1f10e19a17",
+        "properties": {
+            "width": 480,
+            "height": 270,
+            "frame_rate": 59.94,
+            "scan": "progressive",
+            "pixel_format": "yuv420p",
+            "bit_depth": 8,
+            "color_primaries": "bt709",
+            "transfer_characteristics": "bt709",
+            "matrix_coefficients": "bt709",
+            "range": "limited",
+            "duration": 59.993,
+            "frame_count": 3596,
+            "start_frame": 1,
+            "start_indicator": true,
+            "end_indicator": true,
+            "qr_positions": 4,
+            "label": "A1",
+            "codec": "H.264"
+        },
+        "source": {
+            "name": "tearsofsteel_4k.mov",
+            "URI": "https://dash-large-files.akamaized.net/WAVE/Original/tearsofsteel_4k.mov",
+            "license": "The proceedings and results of the Mango Open Movie project are being licensed under the Creative Commons Attribution 3.0 license. This material is a result of the Mango Open Movie project, who owns the copyright. The Mango Open Movie project (licensor) has licensed it under the Creative Commons Attribution 3.0 license (https://creativecommons.org/licenses/by/3.0/). In short, this means you can freely reuse and distribute this content, also commercially, for as long you provide a proper attribution. The attribution is: (CC) Blender Foundation | mango.blender.org"
+        }
+    }
+}

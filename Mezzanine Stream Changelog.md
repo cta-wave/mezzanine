@@ -1,4 +1,20 @@
 # CTA WAVE Mezzanine Changelog
+**Version 4** (review started on 2023-02-14, approved on 2023-03-01)
+- This mezzanine release is located here: https://dash.akamaized.net/WAVE/Mezzanine/releases/4/
+- Changes:
+  - Updated 4 audio mezzanine files:
+    - Silence removed from the start (first 75 samples) of PN01.wav, PN02.wav, PN03.wav, and PN04.wav
+    - PN04.wav now uses "PN04" as the seed, and the duration was changed from 30s to 60s
+  - Changed 2h long duration mezzanine stream audio to a loop of PN01.wav
+- Updated files (6):
+  - croatia_LD1_1920x1080@25_7200.mp4
+  - tos_LD1_1920x1080@30_7200.mp4
+  - PN01.wav
+  - PN02.wav
+  - PN03.wav
+  - PN04.wav
+
+
 **Version 3** (review started on 2022-10-12, approved on 2022-10-19)
 - This mezzanine release is located here: https://dash.akamaized.net/WAVE/Mezzanine/releases/3/
 - Changes:

@@ -1,0 +1,19 @@
+{
+    "Mezzanine": {
+        "name": "PN04",
+        "URI": "./PN04.wav",
+        "version": 4,
+        "specification_version": 1,
+        "creation_date": "2023-02-28",
+        "seed": "PN04",
+        "license": "\u00a9 Consumer Technology Association (CTA)\u00ae, licensed under Creative Commons Attribution 4.0 International (CC BY 4.0) (https://creativecommons.org/licenses/by/4.0/) / annotated, encoded and compressed from original.",
+        "command_line": "audiomezz.py --duration 60 --samplerate 48000 --seed PN04 --channels 2 --silentstart 0 _mezzanine\\PN04.wav",
+        "md5": "f44fa674c388e529eafaf7ffa1a1d519",
+        "properties": {
+            "channel_count": 2,
+            "bits_per_sample": 16,
+            "sample_rate": 48000,
+            "duration": 60
+        }
+    }
+}

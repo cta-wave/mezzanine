@@ -10,9 +10,13 @@ qrcode >= 6.1          # Minimum version 6.1
 #
 #   For bitpattern\bitpat_create.py
 opencv-python >= 4.4.0 # Minimum version 4.4.0 (cv2)
-numpy >= 1.19          # Minimum version 1.19
+numpy >= 1.24.1        # Minimum version 1.24.1
 #
 #   For add_second_audio_track.py
 pydub >=0.24.1         # Minimum version 0.24.1
 pyttsx3 >=2.90         # Minimum version 2.90
+#
+#   For audiomezz.py
+numpy >= 1.24.1        # Minimum version 1.24.1
+scipy >= 1.10.0        # Minimum version 1.10.0
 #
