@@ -1,0 +1,20 @@
+{
+    "audio": {
+        "PN01": {
+            "path": "https://dash-large-files.akamaized.net/WAVE/Mezzanine/releases/4/PN01.wav",
+            "json_path": "https://dash-large-files.akamaized.net/WAVE/Mezzanine/releases/4/PN01.json"
+        },
+        "PN02": {
+            "path": "https://dash-large-files.akamaized.net/WAVE/Mezzanine/releases/4/PN02.wav",
+            "json_path": "https://dash-large-files.akamaized.net/WAVE/Mezzanine/releases/4/PN02.json"
+        },
+        "PN03": {
+            "path": "https://dash-large-files.akamaized.net/WAVE/Mezzanine/releases/4/PN03.wav",
+            "json_path": "https://dash-large-files.akamaized.net/WAVE/Mezzanine/releases/4/PN03.json"
+        },
+        "PN04": {
+            "path": "https://dash-large-files.akamaized.net/WAVE/Mezzanine/releases/4/PN04.wav",
+            "json_path": "https://dash-large-files.akamaized.net/WAVE/Mezzanine/releases/4/PN04.json"
+        }
+    }
+}
