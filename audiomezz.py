@@ -5,13 +5,109 @@ This program accepts a seed parameter and duration and generates binary files of
 by the CTA WAVE Project.
 """
 import argparse
+import hashlib
+import json
 import numpy as np
 import os
+import re
 import scipy.io.wavfile as wav
+import sys
 import time
 
+from datetime import date
+from json import JSONEncoder
 from pathlib import Path
 from scipy import signal
+
+
+class MezzanineProperties:
+    channel_count = 0
+    bits_per_sample = 0
+    sample_rate = 0
+    duration = 0
+    codec = ''
+    
+    def __init__(self, channel_count=None, bits_per_sample=None, sample_rate=None, duration=None, codec=None):
+        if channel_count is not None:
+            self.channel_count = channel_count
+        if bits_per_sample is not None:
+            self.bits_per_sample = bits_per_sample
+        if sample_rate is not None:
+            self.sample_rate = sample_rate
+        if duration is not None:
+            self.duration = duration
+        if codec is not None:
+            self.codec = codec
+    
+    def json(self):
+        return {
+            'channel_count': self.channel_count,
+            'bits_per_sample': self.bits_per_sample,
+            'sample_rate': self.sample_rate,
+            'duration': self.duration,
+            'codec': self.codec
+        }
+
+
+class Mezzanine:
+    name = ''
+    URI = ''
+    version = 0
+    specification_version = 0
+    creation_date = 'YYYY-MM-DD'
+    seed = ''
+    license = ''
+    command_line = ''
+    md5 = ''
+    properties = MezzanineProperties()
+    
+    def __init__(self, name=None, uri=None, version=None, specification_version=None,
+                 creation_date=None, seed=None, license=None, cl=None,
+                 md5=None, properties=None):
+        if name is not None:
+            self.name = name
+        if uri is not None:
+            self.URI = uri
+        if version is not None:
+            self.version = version
+        if specification_version is not None:
+            self.specification_version = specification_version
+        if creation_date is not None:
+            self.creation_date = creation_date
+        if seed is not None:
+            self.seed = seed
+        if license is not None:
+            self.license = license
+        if cl is not None:
+            self.command_line = cl
+        if md5 is not None:
+            self.md5 = md5
+        if properties is not None:
+            self.properties = properties
+    
+    def json(self):
+        properties = self.properties.json()
+        return {
+            'Mezzanine': {
+                'name': self.name,
+                'URI': self.URI,
+                'version': self.version,
+                'specification_version': self.specification_version,
+                'creation_date': self.creation_date,
+                'seed': self.seed,
+                'license': re.sub(' +', ' ', self.license.replace('\n', ' ')),
+                'command_line': self.command_line,
+                'md5': self.md5,
+                'properties': properties
+            }
+        }
+
+
+class MezzanineEncoder(JSONEncoder):
+    def default(self, o):
+        if "json" in dir(o):
+            return o.json()
+        return JSONEncoder.default(self, o)
 
 
 def check_channels(ch):
@@ -29,6 +125,8 @@ duration = 60        # [s]
 samplerate = 48000   # [Hz]
 bw = 7000            # [Hz]
 silentstart = 0
+mezz_version = 0
+mezz_specification_version = 0
 
 # Basic argument handling for the following: -d -f -s -c output
 parser = argparse.ArgumentParser(description="Test of audio PN noise and correlation methods")
@@ -50,6 +148,19 @@ parser.add_argument(
     '--silentstart', required=False, choices=['0', '1'],
     help="Determines whether the audio file generated has initial silence (=1) or not (=0). "
          "Default: "+str(silentstart))
+parser.add_argument(
+    '--spec-version',
+    required=False,
+    type=int,
+    help="The version of the mezzanine annotation specification that the mezzanine generated will be compliant with. "
+         "Default: "+str(mezz_specification_version))
+parser.add_argument(
+    '-v', '--version',
+    required=False,
+    type=int,
+    help="The official mezzanine release version that the mezzanine generated are intended for. "
+         "Default: "+str(mezz_version))
+
 parser.add_argument('output', help="Output file (fname.ftp).")
 args = parser.parse_args()
 
@@ -63,8 +174,10 @@ if not os.path.isdir(output.parent):
 
 # Set parameters to values provided in arguments
 if args.seed is not None:
+    seed_base = args.seed
     seed = int(''.join('{0:03n}'.format(ord(c)) for c in args.seed))
 else:
+    seed_base = output.name
     seed = int(''.join('{0:03n}'.format(ord(c)) for c in output.name))
 if args.duration is not None:
     duration = args.duration
@@ -74,10 +187,17 @@ if args.channels is not None:
     channels = args.channels
 if args.silentstart is not None:
     silentstart = int(args.silentstart)
+if args.spec_version is not None:
+    mezz_specification_version = args.spec_version
+if args.version is not None:
+    mezz_version = args.version
+
+# Initialise mezzanine properties metadata
+mezz_properties = MezzanineProperties(channels, 16, samplerate, duration, 'Signed Linear PCM')
 
 # Generate a binary noise array from a uniform distribution.  The array ndata is of type ndarray (1-D)
 ss = np.random.SeedSequence(seed)
-print('seed base = '+args.seed)
+print('seed base = '+seed_base)
 print('seed = {}'.format(ss.entropy))
 bg = np.random.PCG64(ss)                # bg == Bit Generator
 gen = np.random.Generator(bg)           # gen == instance of generator class
@@ -111,5 +231,55 @@ else:
 
 # Write audio generated to wave file
 wav.write(output, samplerate, mc_data.astype(np.int16))
+
+# Output metadata
+# Import CTA mezzanine license if available
+mezz_license = ""
+try:
+    mezz_license_file = open(str(Path('audiomezz_CTA_LICENSE.txt')), encoding="utf-8")
+    mezz_license = mezz_license_file.read()
+    mezz_license_file.close()
+except OSError:
+    print("Failed to load mezzanine CTA LICENSE file. Ensure the file is located in the same folder as this script "
+        "with the name audiomezz_CTA_LICENSE.txt.")
+
+# Calculate MD5 hash
+BLOCK_SIZE = 65536
+mezz_file_hash = hashlib.md5()
+with open(output, 'rb') as mezz_file:
+    mezz_file_block = mezz_file.read(BLOCK_SIZE)
+    while len(mezz_file_block) > 0: 					# Until all data has been read from mezzanine file
+        mezz_file_hash.update(mezz_file_block) 			# Update hash
+        mezz_file_block = mezz_file.read(BLOCK_SIZE) 	# Read the next block from mezzanine file
+
+mezz_metadata = Mezzanine(output.stem, './'+output.name, mezz_version, mezz_specification_version, date.today().isoformat(),
+                          seed_base, mezz_license, str(Path(__file__).resolve().name)+' '+' '.join(sys.argv[1:]), mezz_file_hash.hexdigest(), mezz_properties)
+
+print()
+print("Name: "+mezz_metadata.name)
+print("URI: "+mezz_metadata.URI)
+print("Version: "+str(mezz_metadata.version))
+print("Spec version: "+str(mezz_metadata.specification_version))
+print("Creation date: "+mezz_metadata.creation_date)
+print("Seed: "+str(mezz_metadata.seed))
+print("License: "+mezz_metadata.license)
+print("CL used: "+mezz_metadata.command_line)
+print("MD5: "+mezz_metadata.md5)
+print()
+print("Channel count: "+str(mezz_metadata.properties.channel_count))
+print("Bits per sample: "+str(mezz_metadata.properties.bits_per_sample))
+print("Sample rate: "+str(mezz_metadata.properties.sample_rate))
+print("Duration: "+str(mezz_metadata.properties.duration))
+print("Codec: "+mezz_metadata.properties.codec)
+print()
+
+# Save metadata to JSON file
+mezz_metadata_filepath = Path(str(output.parent)+'\\'+str(output.stem)+'.json')
+mezz_metadata_file = open(str(mezz_metadata_filepath), "w")
+json.dump(mezz_metadata, mezz_metadata_file, indent=4, cls=MezzanineEncoder)
+mezz_metadata_file.write('\n')
+mezz_metadata_file.close()
+
+print("Mezzanine metadata stored in: "+str(mezz_metadata_filepath))
 
 print("\n    End PNFiles at "+str(time.asctime(time.gmtime())))

@@ -983,8 +983,8 @@ with open(output, 'rb') as mezz_file:
 		mezz_file_block = mezz_file.read(BLOCK_SIZE) 	# Read the next block from mezzanine file
 
 mezz_metadata = Mezzanine(output.stem, mezz_version, mezz_specification_version, date.today().isoformat(), mezz_license,
-						  './'+output.name, ' '.join(sys.argv), ' '.join(ffmpeg_cl).replace('\t', ''),
-						  mezz_file_hash.hexdigest(), mezz_properties, mezz_source)
+						  './'+output.name, str(Path(__file__).resolve().name)+' '+' '.join(sys.argv[1:]),
+						  ' '.join(ffmpeg_cl).replace('\t', ''), mezz_file_hash.hexdigest(), mezz_properties, mezz_source)
 
 print()
 print()
@@ -1025,6 +1025,7 @@ print()
 # Save metadata to JSON file
 mezz_metadata_file = open(str(mezz_metadata_filepath), "w")
 json.dump(mezz_metadata, mezz_metadata_file, indent=4, cls=MezzanineEncoder)
+mezz_metadata_file.write('\n')
 mezz_metadata_file.close()
 
 print("Mezzanine metadata stored in: "+str(mezz_metadata_filepath))
